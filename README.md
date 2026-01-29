@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to Farm-management project
 
 ## Project info
 
