@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Users, Sprout, Tractor } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface FarmOverviewCardProps {
   name: string;
@@ -30,6 +30,7 @@ export function FarmOverviewCard({
   status,
   delay = 0,
 }: FarmOverviewCardProps) {
+  const navigate = useNavigate();
   const statusInfo = statusConfig[status];
 
   return (
@@ -74,7 +75,12 @@ export function FarmOverviewCard({
 
       <div className="flex items-center justify-between pt-3 border-t border-border">
         <span className="text-sm text-muted-foreground">{size}</span>
-        <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate("/farms")}
+          className="text-primary hover:text-primary hover:bg-primary/10"
+        >
           View Details →
         </Button>
       </div>

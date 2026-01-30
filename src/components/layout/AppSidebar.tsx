@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: MapPin, label: "Farms", path: "/farms" },
   { icon: Users, label: "Employees", path: "/employees" },
   { icon: Sprout, label: "Crops", path: "/crops" },
