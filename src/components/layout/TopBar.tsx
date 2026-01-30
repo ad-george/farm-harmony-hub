@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TopBarProps {
   title: string;
@@ -18,6 +20,16 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle }: TopBarProps) {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const userInitials = user?.email?.slice(0, 2).toUpperCase() || "JD";
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div>
@@ -38,7 +50,12 @@ export function TopBar({ title, subtitle }: TopBarProps) {
         </div>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative"
+          onClick={() => navigate("/messages")}
+        >
           <Bell className="h-5 w-5 text-muted-foreground" />
           <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center bg-accent text-accent-foreground">
             3
@@ -52,11 +69,11 @@ export function TopBar({ title, subtitle }: TopBarProps) {
               <Avatar className="h-8 w-8">
                 <AvatarImage src="" />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  JD
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left md:block">
-                <p className="text-sm font-medium">John Doe</p>
+                <p className="text-sm font-medium">{user?.email?.split("@")[0] || "User"}</p>
                 <p className="text-xs text-muted-foreground">Owner</p>
               </div>
             </Button>
@@ -64,16 +81,16 @@ export function TopBar({ title, subtitle }: TopBarProps) {
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/messages")}>
               <Bell className="mr-2 h-4 w-4" />
               Notifications
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

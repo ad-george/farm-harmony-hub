@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, User } from "lucide-react";
+import { Clock, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface Task {
   id: string;
@@ -54,6 +55,8 @@ const priorityConfig = {
 };
 
 export function UpcomingTasksCard() {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,7 +66,12 @@ export function UpcomingTasksCard() {
     >
       <div className="flex items-center justify-between mb-5">
         <h3 className="font-semibold text-foreground">Upcoming Tasks</h3>
-        <button className="text-sm text-primary hover:underline">View All</button>
+        <button 
+          onClick={() => navigate("/tasks")}
+          className="text-sm text-primary hover:underline"
+        >
+          View All
+        </button>
       </div>
 
       <div className="space-y-3">
@@ -76,7 +84,8 @@ export function UpcomingTasksCard() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+              onClick={() => navigate("/tasks")}
+              className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-medium text-foreground text-sm">{task.title}</h4>
