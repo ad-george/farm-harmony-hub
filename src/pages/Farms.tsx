@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface Farm {
   id: string;
@@ -44,47 +45,47 @@ interface Farm {
 const initialFarms: Farm[] = [
   {
     id: "1",
-    name: "Green Valley Farm",
-    location: "California, USA",
+    name: "Kilimanjaro Green Farm",
+    location: "Arusha, Tanzania",
     size: "450 acres",
     soilType: "Loamy",
     employees: 42,
     crops: 8,
     status: "active",
-    manager: "John Smith",
+    manager: "John Kimani",
   },
   {
     id: "2",
-    name: "Sunrise Acres",
-    location: "Texas, USA",
+    name: "Lake Victoria Estates",
+    location: "Kisumu, Kenya",
     size: "780 acres",
     soilType: "Clay",
     employees: 58,
     crops: 12,
     status: "active",
-    manager: "Sarah Johnson",
+    manager: "Sarah Ochieng",
   },
   {
     id: "3",
-    name: "Hillside Ranch",
-    location: "Montana, USA",
+    name: "Rwenzori Highlands",
+    location: "Fort Portal, Uganda",
     size: "1200 acres",
     soilType: "Sandy",
     employees: 35,
     crops: 4,
     status: "maintenance",
-    manager: "Mike Williams",
+    manager: "Michael Mugisha",
   },
   {
     id: "4",
-    name: "River Bend Farms",
-    location: "Oregon, USA",
+    name: "Nyungwe Valley Farm",
+    location: "Butare, Rwanda",
     size: "620 acres",
     soilType: "Silt",
     employees: 28,
     crops: 6,
     status: "active",
-    manager: "Emily Davis",
+    manager: "Emily Uwimana",
   },
 ];
 
@@ -95,15 +96,57 @@ const statusConfig = {
 };
 
 export default function Farms() {
-  const [farms] = useState<Farm[]>(initialFarms);
+  const [farms, setFarms] = useState<Farm[]>(initialFarms);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    size: "",
+    soilType: "",
+    manager: "",
+  });
 
   const filteredFarms = farms.filter(
     (farm) =>
       farm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       farm.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveFarm = () => {
+    if (!formData.name || !formData.location || !formData.size || !formData.soilType || !formData.manager) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const newFarm: Farm = {
+      id: Date.now().toString(),
+      name: formData.name,
+      location: formData.location,
+      size: `${formData.size} acres`,
+      soilType: formData.soilType,
+      employees: 0,
+      crops: 0,
+      status: "active",
+      manager: formData.manager,
+    };
+
+    setFarms((prev) => [...prev, newFarm]);
+    setFormData({ name: "", location: "", size: "", soilType: "", manager: "" });
+    setIsDialogOpen(false);
+    toast.success("Farm added successfully!");
+  };
+
+  const handleDeleteFarm = (id: string) => {
+    setFarms((prev) => prev.filter((farm) => farm.id !== id));
+    toast.success("Farm deleted successfully!");
+  };
 
   return (
     <DashboardLayout
@@ -138,51 +181,66 @@ export default function Farms() {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Farm Name</Label>
-                <Input id="name" placeholder="Enter farm name" />
+                <Input 
+                  id="name" 
+                  placeholder="Enter farm name" 
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" placeholder="City, State, Country" />
+                <Input 
+                  id="location" 
+                  placeholder="City, Country (e.g., Nairobi, Kenya)" 
+                  value={formData.location}
+                  onChange={(e) => handleInputChange("location", e.target.value)}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="size">Size (acres)</Label>
-                  <Input id="size" type="number" placeholder="0" />
+                  <Input 
+                    id="size" 
+                    type="number" 
+                    placeholder="0" 
+                    value={formData.size}
+                    onChange={(e) => handleInputChange("size", e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="soilType">Soil Type</Label>
-                  <Select>
+                  <Select 
+                    value={formData.soilType} 
+                    onValueChange={(value) => handleInputChange("soilType", value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="loamy">Loamy</SelectItem>
-                      <SelectItem value="clay">Clay</SelectItem>
-                      <SelectItem value="sandy">Sandy</SelectItem>
-                      <SelectItem value="silt">Silt</SelectItem>
+                      <SelectItem value="Loamy">Loamy</SelectItem>
+                      <SelectItem value="Clay">Clay</SelectItem>
+                      <SelectItem value="Sandy">Sandy</SelectItem>
+                      <SelectItem value="Silt">Silt</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="manager">Assign Manager</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select manager" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="john">John Smith</SelectItem>
-                    <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                    <SelectItem value="mike">Mike Williams</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="manager">Farm Manager</Label>
+                <Input 
+                  id="manager" 
+                  placeholder="Enter manager name" 
+                  value={formData.manager}
+                  onChange={(e) => handleInputChange("manager", e.target.value)}
+                />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsDialogOpen(false)}>Save Farm</Button>
+              <Button onClick={handleSaveFarm}>Save Farm</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -219,7 +277,10 @@ export default function Farms() {
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem 
+                      className="text-destructive"
+                      onClick={() => handleDeleteFarm(farm.id)}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </DropdownMenuItem>

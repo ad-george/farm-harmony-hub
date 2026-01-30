@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Shield, Palette, Globe, Database, Save } from "lucide-react";
+import { User, Bell, Shield, Palette, Save } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +16,77 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Settings() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState({
+    fullName: "",
+    phone: "",
+    avatarUrl: "",
+  });
+
+  // Load profile data on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, phone, avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (data) {
+        setProfileData({
+          fullName: data.full_name || "",
+          phone: data.phone || "",
+          avatarUrl: data.avatar_url || "",
+        });
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: profileData.fullName,
+        phone: profileData.phone,
+        avatar_url: profileData.avatarUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id);
+
+    setLoading(false);
+
+    if (error) {
+      toast.error("Failed to save profile: " + error.message);
+    } else {
+      toast.success("Profile saved successfully!");
+    }
+  };
+
+  const getInitials = () => {
+    if (profileData.fullName) {
+      return profileData.fullName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return user?.email?.slice(0, 2).toUpperCase() || "U";
+  };
+
   return (
     <DashboardLayout
       title="Settings"
@@ -54,9 +124,9 @@ export default function Settings() {
             
             <div className="flex items-center gap-6 mb-8">
               <Avatar className="h-24 w-24">
-                <AvatarImage src="" />
+                <AvatarImage src={profileData.avatarUrl} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  JD
+                  {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -69,33 +139,56 @@ export default function Settings() {
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" defaultValue="John" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" defaultValue="Doe" />
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input 
+                  id="fullName" 
+                  value={profileData.fullName}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, fullName: e.target.value }))}
+                  placeholder="Enter your full name"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="john.doe@farmflow.com" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={user?.email || ""} 
+                  disabled 
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" />
+                <Input 
+                  id="phone" 
+                  type="tel" 
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+254 xxx xxx xxx"
+                />
               </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" defaultValue="Farm owner with 15+ years of experience in sustainable agriculture" />
+              <div className="space-y-2">
+                <Label htmlFor="avatarUrl">Avatar URL</Label>
+                <Input 
+                  id="avatarUrl" 
+                  value={profileData.avatarUrl}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, avatarUrl: e.target.value }))}
+                  placeholder="https://example.com/avatar.jpg"
+                />
               </div>
             </div>
 
             <Separator className="my-6" />
 
             <div className="flex justify-end">
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button 
+                className="bg-primary hover:bg-primary/90"
+                onClick={handleSaveProfile}
+                disabled={loading}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                Save Changes
+                {loading ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </motion.div>
@@ -241,50 +334,50 @@ export default function Settings() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="sw">Swahili</SelectItem>
                       <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Timezone</Label>
-                  <Select defaultValue="pst">
+                  <Select defaultValue="eat">
                     <SelectTrigger>
                       <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pst">Pacific Time (PST)</SelectItem>
-                      <SelectItem value="mst">Mountain Time (MST)</SelectItem>
-                      <SelectItem value="cst">Central Time (CST)</SelectItem>
-                      <SelectItem value="est">Eastern Time (EST)</SelectItem>
+                      <SelectItem value="eat">East Africa Time (EAT)</SelectItem>
+                      <SelectItem value="cat">Central Africa Time (CAT)</SelectItem>
+                      <SelectItem value="wat">West Africa Time (WAT)</SelectItem>
+                      <SelectItem value="sast">South Africa Standard Time (SAST)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Date Format</Label>
-                  <Select defaultValue="mdy">
+                  <Select defaultValue="dmy">
                     <SelectTrigger>
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mdy">MM/DD/YYYY</SelectItem>
                       <SelectItem value="dmy">DD/MM/YYYY</SelectItem>
+                      <SelectItem value="mdy">MM/DD/YYYY</SelectItem>
                       <SelectItem value="ymd">YYYY-MM-DD</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Currency</Label>
-                  <Select defaultValue="usd">
+                  <Select defaultValue="kes">
                     <SelectTrigger>
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="kes">KES (KSh)</SelectItem>
+                      <SelectItem value="tzs">TZS (TSh)</SelectItem>
+                      <SelectItem value="ugx">UGX (USh)</SelectItem>
+                      <SelectItem value="rwf">RWF (FRw)</SelectItem>
                       <SelectItem value="usd">USD ($)</SelectItem>
-                      <SelectItem value="eur">EUR (€)</SelectItem>
-                      <SelectItem value="gbp">GBP (£)</SelectItem>
-                      <SelectItem value="cad">CAD ($)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
