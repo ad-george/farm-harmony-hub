@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, MapPin, Users, Sprout, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, MapPin, Users, MoreHorizontal, Edit, Trash2, Factory } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+
+type FarmType = "crops" | "livestock" | "poultry" | "mixed" | "dairy" | "aquaculture";
 
 interface Farm {
   id: string;
@@ -37,7 +40,7 @@ interface Farm {
   size: string;
   soilType: string;
   employees: number;
-  crops: number;
+  farmType: FarmType;
   status: "active" | "maintenance" | "idle";
   manager: string;
 }
@@ -50,7 +53,7 @@ const initialFarms: Farm[] = [
     size: "450 acres",
     soilType: "Loamy",
     employees: 42,
-    crops: 8,
+    farmType: "crops",
     status: "active",
     manager: "John Kimani",
   },
@@ -61,7 +64,7 @@ const initialFarms: Farm[] = [
     size: "780 acres",
     soilType: "Clay",
     employees: 58,
-    crops: 12,
+    farmType: "mixed",
     status: "active",
     manager: "Sarah Ochieng",
   },
@@ -72,7 +75,7 @@ const initialFarms: Farm[] = [
     size: "1200 acres",
     soilType: "Sandy",
     employees: 35,
-    crops: 4,
+    farmType: "livestock",
     status: "maintenance",
     manager: "Michael Mugisha",
   },
@@ -83,7 +86,7 @@ const initialFarms: Farm[] = [
     size: "620 acres",
     soilType: "Silt",
     employees: 28,
-    crops: 6,
+    farmType: "poultry",
     status: "active",
     manager: "Emily Uwimana",
   },
@@ -95,10 +98,20 @@ const statusConfig = {
   idle: { label: "Idle", className: "bg-muted text-muted-foreground" },
 };
 
+const farmTypeLabels: Record<FarmType, string> = {
+  crops: "Crops Farm",
+  livestock: "Livestock Farm",
+  poultry: "Poultry Farm",
+  mixed: "Mixed Farm",
+  dairy: "Dairy Farm",
+  aquaculture: "Aquaculture",
+};
+
 export default function Farms() {
   const [farms, setFarms] = useState<Farm[]>(initialFarms);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingFarm, setEditingFarm] = useState<Farm | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -107,6 +120,9 @@ export default function Farms() {
     size: "",
     soilType: "",
     manager: "",
+    employees: "",
+    farmType: "" as FarmType | "",
+    isActive: true,
   });
 
   const filteredFarms = farms.filter(
@@ -115,37 +131,97 @@ export default function Farms() {
       farm.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      location: "",
+      size: "",
+      soilType: "",
+      manager: "",
+      employees: "",
+      farmType: "",
+      isActive: true,
+    });
+    setEditingFarm(null);
+  };
+
+  const openEditDialog = (farm: Farm) => {
+    setEditingFarm(farm);
+    setFormData({
+      name: farm.name,
+      location: farm.location,
+      size: farm.size.replace(" acres", ""),
+      soilType: farm.soilType,
+      manager: farm.manager,
+      employees: farm.employees.toString(),
+      farmType: farm.farmType,
+      isActive: farm.status === "active",
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleSaveFarm = () => {
-    if (!formData.name || !formData.location || !formData.size || !formData.soilType || !formData.manager) {
+    if (!formData.name || !formData.location || !formData.size || !formData.soilType || !formData.manager || !formData.farmType || !formData.employees) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const newFarm: Farm = {
-      id: Date.now().toString(),
-      name: formData.name,
-      location: formData.location,
-      size: `${formData.size} acres`,
-      soilType: formData.soilType,
-      employees: 0,
-      crops: 0,
-      status: "active",
-      manager: formData.manager,
-    };
+    if (editingFarm) {
+      // Update existing farm
+      setFarms((prev) =>
+        prev.map((farm) =>
+          farm.id === editingFarm.id
+            ? {
+                ...farm,
+                name: formData.name,
+                location: formData.location,
+                size: `${formData.size} acres`,
+                soilType: formData.soilType,
+                manager: formData.manager,
+                employees: parseInt(formData.employees) || 0,
+                farmType: formData.farmType as FarmType,
+                status: formData.isActive ? "active" : "idle",
+              }
+            : farm
+        )
+      );
+      toast.success("Farm updated successfully!");
+    } else {
+      // Add new farm
+      const newFarm: Farm = {
+        id: Date.now().toString(),
+        name: formData.name,
+        location: formData.location,
+        size: `${formData.size} acres`,
+        soilType: formData.soilType,
+        employees: parseInt(formData.employees) || 0,
+        farmType: formData.farmType as FarmType,
+        status: formData.isActive ? "active" : "idle",
+        manager: formData.manager,
+      };
 
-    setFarms((prev) => [...prev, newFarm]);
-    setFormData({ name: "", location: "", size: "", soilType: "", manager: "" });
+      setFarms((prev) => [...prev, newFarm]);
+      toast.success("Farm added successfully!");
+    }
+
+    resetForm();
     setIsDialogOpen(false);
-    toast.success("Farm added successfully!");
   };
 
   const handleDeleteFarm = (id: string) => {
     setFarms((prev) => prev.filter((farm) => farm.id !== id));
     toast.success("Farm deleted successfully!");
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    setIsDialogOpen(open);
   };
 
   return (
@@ -164,7 +240,7 @@ export default function Farms() {
             className="pl-9"
           />
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
@@ -173,9 +249,12 @@ export default function Farms() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Add New Farm</DialogTitle>
+              <DialogTitle>{editingFarm ? "Edit Farm" : "Add New Farm"}</DialogTitle>
               <DialogDescription>
-                Enter the details for your new farm. Click save when you're done.
+                {editingFarm 
+                  ? "Update the farm details below. Click save when you're done."
+                  : "Enter the details for your new farm. Click save when you're done."
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -226,6 +305,37 @@ export default function Farms() {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="employees">Number of Employees</Label>
+                  <Input 
+                    id="employees" 
+                    type="number" 
+                    placeholder="0" 
+                    value={formData.employees}
+                    onChange={(e) => handleInputChange("employees", e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="farmType">Farm Type</Label>
+                  <Select 
+                    value={formData.farmType} 
+                    onValueChange={(value) => handleInputChange("farmType", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="crops">Crops Farm</SelectItem>
+                      <SelectItem value="livestock">Livestock Farm</SelectItem>
+                      <SelectItem value="poultry">Poultry Farm</SelectItem>
+                      <SelectItem value="dairy">Dairy Farm</SelectItem>
+                      <SelectItem value="mixed">Mixed Farm</SelectItem>
+                      <SelectItem value="aquaculture">Aquaculture</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="manager">Farm Manager</Label>
                 <Input 
@@ -235,12 +345,20 @@ export default function Farms() {
                   onChange={(e) => handleInputChange("manager", e.target.value)}
                 />
               </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isActive">Farm Status (Active)</Label>
+                <Switch
+                  id="isActive"
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) => handleInputChange("isActive", checked)}
+                />
+              </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" onClick={() => handleDialogClose(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSaveFarm}>Save Farm</Button>
+              <Button onClick={handleSaveFarm}>{editingFarm ? "Update Farm" : "Save Farm"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -273,7 +391,7 @@ export default function Farms() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openEditDialog(farm)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </DropdownMenuItem>
@@ -309,8 +427,8 @@ export default function Farms() {
                   <span>{farm.employees}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Sprout className="h-4 w-4" />
-                  <span>{farm.crops} crops</span>
+                  <Factory className="h-4 w-4" />
+                  <span>{farmTypeLabels[farm.farmType]}</span>
                 </div>
                 <Badge className={`ml-auto ${status.className}`}>
                   {status.label}
