@@ -6,95 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  farm: string;
-  assignee: string;
-  dueDate: string;
-  priority: "high" | "medium" | "low";
-  status: "pending" | "in-progress" | "completed";
-  category: "irrigation" | "planting" | "harvest" | "maintenance" | "livestock" | "other";
-}
-
-const tasks: Task[] = [
-  {
-    id: "1",
-    title: "Inspect irrigation system",
-    description: "Check all sprinkler heads and fix any leaks in the north field",
-    farm: "Green Valley Farm",
-    assignee: "Mike Johnson",
-    dueDate: "Today, 2:00 PM",
-    priority: "high",
-    status: "pending",
-    category: "irrigation",
-  },
-  {
-    id: "2",
-    title: "Apply fertilizer to corn fields",
-    description: "Use NPK fertilizer on sections A-D of the corn field",
-    farm: "Sunrise Acres",
-    assignee: "Sarah Williams",
-    dueDate: "Tomorrow, 8:00 AM",
-    priority: "medium",
-    status: "pending",
-    category: "planting",
-  },
-  {
-    id: "3",
-    title: "Livestock vaccination",
-    description: "Vaccinate cattle herd - annual booster shots",
-    farm: "Hillside Ranch",
-    assignee: "David Brown",
-    dueDate: "Feb 2, 10:00 AM",
-    priority: "high",
-    status: "in-progress",
-    category: "livestock",
-  },
-  {
-    id: "4",
-    title: "Equipment maintenance check",
-    description: "Service tractors and check oil levels on all machinery",
-    farm: "Green Valley Farm",
-    assignee: "Emily Davis",
-    dueDate: "Feb 3, 9:00 AM",
-    priority: "low",
-    status: "pending",
-    category: "maintenance",
-  },
-  {
-    id: "5",
-    title: "Harvest lettuce crop",
-    description: "Complete harvest of romaine lettuce in greenhouse 2",
-    farm: "River Bend Farms",
-    assignee: "John Smith",
-    dueDate: "Jan 26, 2025",
-    priority: "high",
-    status: "completed",
-    category: "harvest",
-  },
-  {
-    id: "6",
-    title: "Repair barn roof",
-    description: "Fix leak in the main barn roof, west section",
-    farm: "Hillside Ranch",
-    assignee: "Mike Johnson",
-    dueDate: "Jan 25, 2025",
-    priority: "medium",
-    status: "completed",
-    category: "maintenance",
-  },
-];
+import { useAppData, Task } from "@/contexts/AppDataContext";
 
 const priorityConfig = {
   high: { label: "High", className: "bg-destructive/10 text-destructive" },
@@ -109,8 +22,8 @@ const statusConfig = {
 };
 
 export default function Tasks() {
+  const { tasks, updateTask } = useAppData();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   const getFilteredTasks = (status: string) => {
     return tasks.filter((task) => {
@@ -125,6 +38,11 @@ export default function Tasks() {
   const pendingTasks = tasks.filter((t) => t.status === "pending");
   const inProgressTasks = tasks.filter((t) => t.status === "in-progress");
   const completedTasks = tasks.filter((t) => t.status === "completed");
+
+  const handleToggleComplete = (task: Task) => {
+    const newStatus = task.status === "completed" ? "pending" : "completed";
+    updateTask(task.id, { status: newStatus });
+  };
 
   const TaskCard = ({ task, index }: { task: Task; index: number }) => {
     const priority = priorityConfig[task.priority];
@@ -141,6 +59,7 @@ export default function Tasks() {
         <div className="flex items-start gap-3">
           <Checkbox
             checked={task.status === "completed"}
+            onCheckedChange={() => handleToggleComplete(task)}
             className="mt-1"
           />
           <div className="flex-1 min-w-0">

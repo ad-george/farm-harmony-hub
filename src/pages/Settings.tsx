@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Shield, Palette, Save } from "lucide-react";
+import { User, Bell, Shield, Palette, Save, Camera } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,9 @@ import { toast } from "sonner";
 
 export default function Settings() {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [profileData, setProfileData] = useState({
     fullName: "",
     phone: "",
@@ -51,6 +53,48 @@ export default function Settings() {
 
     loadProfile();
   }, [user]);
+
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size must be less than 2MB");
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      // Convert to base64 for preview (in production, you'd upload to storage)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setProfileData((prev) => ({ ...prev, avatarUrl: base64 }));
+        setUploadingPhoto(false);
+        toast.success("Photo updated! Don't forget to save your changes.");
+      };
+      reader.onerror = () => {
+        setUploadingPhoto(false);
+        toast.error("Failed to read the image file");
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      setUploadingPhoto(false);
+      toast.error("Failed to upload photo");
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -123,14 +167,37 @@ export default function Settings() {
             <h3 className="text-lg font-semibold mb-6">Profile Information</h3>
             
             <div className="flex items-center gap-6 mb-8">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profileData.avatarUrl} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative group">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profileData.avatarUrl} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={handlePhotoClick}
+                  disabled={uploadingPhoto}
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Camera className="h-6 w-6 text-white" />
+                </button>
+              </div>
               <div>
-                <Button variant="outline" className="mb-2">Change Photo</Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline" 
+                  className="mb-2"
+                  onClick={handlePhotoClick}
+                  disabled={uploadingPhoto}
+                >
+                  {uploadingPhoto ? "Uploading..." : "Change Photo"}
+                </Button>
                 <p className="text-sm text-muted-foreground">
                   JPG, GIF or PNG. Max size 2MB.
                 </p>
@@ -169,10 +236,10 @@ export default function Settings() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="avatarUrl">Avatar URL</Label>
+                <Label htmlFor="avatarUrl">Avatar URL (optional)</Label>
                 <Input 
                   id="avatarUrl" 
-                  value={profileData.avatarUrl}
+                  value={profileData.avatarUrl.startsWith("data:") ? "" : profileData.avatarUrl}
                   onChange={(e) => setProfileData(prev => ({ ...prev, avatarUrl: e.target.value }))}
                   placeholder="https://example.com/avatar.jpg"
                 />

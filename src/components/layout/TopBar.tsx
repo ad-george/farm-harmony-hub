@@ -1,4 +1,5 @@
-import { Bell, Search, User, LogOut } from "lucide-react";
+import { useRef } from "react";
+import { Bell, Search, User, LogOut, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface TopBarProps {
   title: string;
@@ -22,6 +24,9 @@ interface TopBarProps {
 export function TopBar({ title, subtitle }: TopBarProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { getTotalUnreadCount } = useAppData();
+
+  const unreadCount = getTotalUnreadCount();
 
   const handleLogout = async () => {
     await signOut();
@@ -57,9 +62,11 @@ export function TopBar({ title, subtitle }: TopBarProps) {
           onClick={() => navigate("/messages")}
         >
           <Bell className="h-5 w-5 text-muted-foreground" />
-          <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center bg-accent text-accent-foreground">
-            3
-          </Badge>
+          {unreadCount > 0 && (
+            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center bg-accent text-accent-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </Badge>
+          )}
         </Button>
 
         {/* User Menu */}
@@ -88,6 +95,11 @@ export function TopBar({ title, subtitle }: TopBarProps) {
             <DropdownMenuItem onClick={() => navigate("/messages")}>
               <Bell className="mr-2 h-4 w-4" />
               Notifications
+              {unreadCount > 0 && (
+                <Badge className="ml-auto h-5 px-1.5 text-xs bg-accent text-accent-foreground">
+                  {unreadCount}
+                </Badge>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">
