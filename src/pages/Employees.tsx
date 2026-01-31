@@ -1,17 +1,33 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Mail, Phone, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Mail, Phone, MoreHorizontal, Edit, Trash2, MessageSquare } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -20,74 +36,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: "owner" | "manager" | "employee";
-  farm: string;
-  status: "active" | "on-leave" | "inactive";
-  avatar?: string;
-}
-
-const employees: Employee[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@farmflow.com",
-    phone: "+1 (555) 123-4567",
-    role: "owner",
-    farm: "All Farms",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah.j@farmflow.com",
-    phone: "+1 (555) 234-5678",
-    role: "manager",
-    farm: "Green Valley Farm",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Mike Williams",
-    email: "mike.w@farmflow.com",
-    phone: "+1 (555) 345-6789",
-    role: "manager",
-    farm: "Sunrise Acres",
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    email: "emily.d@farmflow.com",
-    phone: "+1 (555) 456-7890",
-    role: "employee",
-    farm: "Green Valley Farm",
-    status: "active",
-  },
-  {
-    id: "5",
-    name: "David Brown",
-    email: "david.b@farmflow.com",
-    phone: "+1 (555) 567-8901",
-    role: "employee",
-    farm: "Hillside Ranch",
-    status: "on-leave",
-  },
-  {
-    id: "6",
-    name: "Lisa Garcia",
-    email: "lisa.g@farmflow.com",
-    phone: "+1 (555) 678-9012",
-    role: "employee",
-    farm: "Sunrise Acres",
-    status: "active",
-  },
-];
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { useAppData, Employee } from "@/contexts/AppDataContext";
 
 const roleConfig = {
   owner: { label: "Owner", className: "bg-primary/10 text-primary" },
@@ -102,7 +53,20 @@ const statusConfig = {
 };
 
 export default function Employees() {
+  const navigate = useNavigate();
+  const { employees, farms, addEmployee, updateEmployee, deleteEmployee } = useAppData();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    role: "" as "owner" | "manager" | "employee" | "",
+    farm: "",
+    status: "active" as "active" | "on-leave" | "inactive",
+  });
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -110,6 +74,85 @@ export default function Employees() {
       emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.farm.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      role: "",
+      farm: "",
+      status: "active",
+    });
+    setEditingEmployee(null);
+  };
+
+  const openAddDialog = () => {
+    resetForm();
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setFormData({
+      name: employee.name,
+      email: employee.email,
+      phone: employee.phone,
+      role: employee.role,
+      farm: employee.farm,
+      status: employee.status,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveEmployee = () => {
+    if (!formData.name || !formData.email || !formData.phone || !formData.role || !formData.farm) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (editingEmployee) {
+      updateEmployee(editingEmployee.id, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role as "owner" | "manager" | "employee",
+        farm: formData.farm,
+        status: formData.status,
+      });
+      toast.success("Employee updated successfully!");
+    } else {
+      addEmployee({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role as "owner" | "manager" | "employee",
+        farm: formData.farm,
+        status: formData.status,
+      });
+      toast.success("Employee added successfully!");
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
+  const handleDeleteEmployee = (id: string) => {
+    deleteEmployee(id);
+    toast.success("Employee removed successfully!");
+  };
+
+  const handleSendMessage = (employeeName: string) => {
+    toast.info(`Opening message to ${employeeName}...`);
+    navigate("/messages");
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    setIsDialogOpen(open);
+  };
 
   return (
     <DashboardLayout
@@ -127,11 +170,119 @@ export default function Employees() {
             className="pl-9"
           />
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={openAddDialog}>
           <Plus className="h-4 w-4 mr-2" />
           Add Employee
         </Button>
       </div>
+
+      {/* Add/Edit Employee Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{editingEmployee ? "Edit Employee" : "Add New Employee"}</DialogTitle>
+            <DialogDescription>
+              {editingEmployee 
+                ? "Update the employee details below."
+                : "Enter the details for the new employee."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input 
+                id="name" 
+                placeholder="Enter full name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email"
+                  placeholder="email@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input 
+                  id="phone" 
+                  placeholder="+254 xxx xxx xxx"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="role">Role</Label>
+                <Select 
+                  value={formData.role} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, role: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="owner">Owner</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="employee">Employee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="on-leave">On Leave</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="farm">Assigned Farm</Label>
+              <Select 
+                value={formData.farm} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, farm: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select farm" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Farms">All Farms</SelectItem>
+                  {farms.map((farm) => (
+                    <SelectItem key={farm.id} value={farm.name}>
+                      {farm.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => handleDialogClose(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEmployee}>
+              {editingEmployee ? "Update Employee" : "Add Employee"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Employees Table */}
       <motion.div
@@ -204,15 +355,18 @@ export default function Employees() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(employee)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Mail className="h-4 w-4 mr-2" />
+                        <DropdownMenuItem onClick={() => handleSendMessage(employee.name)}>
+                          <MessageSquare className="h-4 w-4 mr-2" />
                           Send Message
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDeleteEmployee(employee.id)}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Remove
                         </DropdownMenuItem>

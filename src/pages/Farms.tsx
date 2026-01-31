@@ -30,67 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-
-type FarmType = "crops" | "livestock" | "poultry" | "mixed" | "dairy" | "aquaculture";
-
-interface Farm {
-  id: string;
-  name: string;
-  location: string;
-  size: string;
-  soilType: string;
-  employees: number;
-  farmType: FarmType;
-  status: "active" | "maintenance" | "idle";
-  manager: string;
-}
-
-const initialFarms: Farm[] = [
-  {
-    id: "1",
-    name: "Kilimanjaro Green Farm",
-    location: "Arusha, Tanzania",
-    size: "450 acres",
-    soilType: "Loamy",
-    employees: 42,
-    farmType: "crops",
-    status: "active",
-    manager: "John Kimani",
-  },
-  {
-    id: "2",
-    name: "Lake Victoria Estates",
-    location: "Kisumu, Kenya",
-    size: "780 acres",
-    soilType: "Clay",
-    employees: 58,
-    farmType: "mixed",
-    status: "active",
-    manager: "Sarah Ochieng",
-  },
-  {
-    id: "3",
-    name: "Rwenzori Highlands",
-    location: "Fort Portal, Uganda",
-    size: "1200 acres",
-    soilType: "Sandy",
-    employees: 35,
-    farmType: "livestock",
-    status: "maintenance",
-    manager: "Michael Mugisha",
-  },
-  {
-    id: "4",
-    name: "Nyungwe Valley Farm",
-    location: "Butare, Rwanda",
-    size: "620 acres",
-    soilType: "Silt",
-    employees: 28,
-    farmType: "poultry",
-    status: "active",
-    manager: "Emily Uwimana",
-  },
-];
+import { useAppData, FarmType, Farm } from "@/contexts/AppDataContext";
 
 const statusConfig = {
   active: { label: "Active", className: "bg-success/10 text-success" },
@@ -108,7 +48,7 @@ const farmTypeLabels: Record<FarmType, string> = {
 };
 
 export default function Farms() {
-  const [farms, setFarms] = useState<Farm[]>(initialFarms);
+  const { farms, addFarm, updateFarm, deleteFarm } = useAppData();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFarm, setEditingFarm] = useState<Farm | null>(null);
@@ -172,28 +112,20 @@ export default function Farms() {
 
     if (editingFarm) {
       // Update existing farm
-      setFarms((prev) =>
-        prev.map((farm) =>
-          farm.id === editingFarm.id
-            ? {
-                ...farm,
-                name: formData.name,
-                location: formData.location,
-                size: `${formData.size} acres`,
-                soilType: formData.soilType,
-                manager: formData.manager,
-                employees: parseInt(formData.employees) || 0,
-                farmType: formData.farmType as FarmType,
-                status: formData.isActive ? "active" : "idle",
-              }
-            : farm
-        )
-      );
+      updateFarm(editingFarm.id, {
+        name: formData.name,
+        location: formData.location,
+        size: `${formData.size} acres`,
+        soilType: formData.soilType,
+        manager: formData.manager,
+        employees: parseInt(formData.employees) || 0,
+        farmType: formData.farmType as FarmType,
+        status: formData.isActive ? "active" : "idle",
+      });
       toast.success("Farm updated successfully!");
     } else {
       // Add new farm
-      const newFarm: Farm = {
-        id: Date.now().toString(),
+      addFarm({
         name: formData.name,
         location: formData.location,
         size: `${formData.size} acres`,
@@ -202,9 +134,7 @@ export default function Farms() {
         farmType: formData.farmType as FarmType,
         status: formData.isActive ? "active" : "idle",
         manager: formData.manager,
-      };
-
-      setFarms((prev) => [...prev, newFarm]);
+      });
       toast.success("Farm added successfully!");
     }
 
@@ -213,7 +143,7 @@ export default function Farms() {
   };
 
   const handleDeleteFarm = (id: string) => {
-    setFarms((prev) => prev.filter((farm) => farm.id !== id));
+    deleteFarm(id);
     toast.success("Farm deleted successfully!");
   };
 
