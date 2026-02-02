@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
-import { MapPin, Users, Sprout, Tractor } from "lucide-react";
+import { MapPin, Users, Sprout, Tractor, Bird, Milk, Layers, Fish } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { FarmType } from "@/contexts/AppDataContext";
 
 interface FarmOverviewCardProps {
   name: string;
   location: string;
   size: string;
   employees: number;
-  crops: number;
-  livestock: number;
+  farmType: FarmType;
+  farmTypeLabel: string;
   status: "active" | "maintenance" | "idle";
   delay?: number;
 }
@@ -20,18 +21,28 @@ const statusConfig = {
   idle: { label: "Idle", className: "status-badge-info" },
 };
 
+const farmTypeIcons: Record<FarmType, typeof Sprout> = {
+  crops: Sprout,
+  livestock: Tractor,
+  poultry: Bird,
+  dairy: Milk,
+  mixed: Layers,
+  aquaculture: Fish,
+};
+
 export function FarmOverviewCard({
   name,
   location,
   size,
   employees,
-  crops,
-  livestock,
+  farmType,
+  farmTypeLabel,
   status,
   delay = 0,
 }: FarmOverviewCardProps) {
   const navigate = useNavigate();
   const statusInfo = statusConfig[status];
+  const FarmIcon = farmTypeIcons[farmType] || Sprout;
 
   return (
     <motion.div
@@ -55,21 +66,16 @@ export function FarmOverviewCard({
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center p-2 rounded-lg bg-muted/50">
           <Users className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
           <p className="text-lg font-semibold text-foreground">{employees}</p>
           <p className="text-xs text-muted-foreground">Staff</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/50">
-          <Sprout className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-          <p className="text-lg font-semibold text-foreground">{crops}</p>
-          <p className="text-xs text-muted-foreground">Crops</p>
-        </div>
-        <div className="text-center p-2 rounded-lg bg-muted/50">
-          <Tractor className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-          <p className="text-lg font-semibold text-foreground">{livestock}</p>
-          <p className="text-xs text-muted-foreground">Livestock</p>
+          <FarmIcon className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+          <p className="text-sm font-semibold text-foreground">{farmTypeLabel}</p>
+          <p className="text-xs text-muted-foreground">Type</p>
         </div>
       </div>
 
