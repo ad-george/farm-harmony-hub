@@ -359,6 +359,10 @@ interface AppDataContextType {
     activeEmployees: number;
     cropFarms: number;
     livestockFarms: number;
+    poultryFarms: number;
+    dairyFarms: number;
+    mixedFarms: number;
+    aquacultureFarms: number;
     pendingTasks: number;
     monthlyRevenue: string;
   };
@@ -481,21 +485,26 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setActivities((prev) => [newActivity, ...prev].slice(0, 10)); // Keep only last 10
   };
 
-  // Stats
+  // Stats - count farms by all types
   const getStats = () => {
-    const activeEmployeeCount = employees.filter((e) => e.status === "active").length;
-    const cropFarmCount = farms.filter((f) => f.farmType === "crops" || f.farmType === "mixed").length;
-    const livestockFarmCount = farms.filter((f) => f.farmType === "livestock" || f.farmType === "dairy").length;
+    const totalEmployeesFromFarms = farms.reduce((sum, farm) => sum + farm.employees, 0);
     const pendingTaskCount = tasks.filter((t) => t.status === "pending").length;
     
-    // Calculate total employees across all farms
-    const totalEmployeesFromFarms = farms.reduce((sum, farm) => sum + farm.employees, 0);
+    // Count by farm type
+    const farmTypeCounts = farms.reduce((acc, farm) => {
+      acc[farm.farmType] = (acc[farm.farmType] || 0) + 1;
+      return acc;
+    }, {} as Record<FarmType, number>);
 
     return {
       totalFarms: farms.length,
       activeEmployees: totalEmployeesFromFarms,
-      cropFarms: cropFarmCount,
-      livestockFarms: livestockFarmCount,
+      cropFarms: farmTypeCounts.crops || 0,
+      livestockFarms: farmTypeCounts.livestock || 0,
+      poultryFarms: farmTypeCounts.poultry || 0,
+      dairyFarms: farmTypeCounts.dairy || 0,
+      mixedFarms: farmTypeCounts.mixed || 0,
+      aquacultureFarms: farmTypeCounts.aquaculture || 0,
       pendingTasks: pendingTaskCount,
       monthlyRevenue: "KSh 2,845,000",
     };

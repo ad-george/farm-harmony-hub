@@ -5,66 +5,137 @@ import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
 import { UpcomingTasksCard } from "@/components/dashboard/UpcomingTasksCard";
-import { MapPin, Users, Sprout, CircleDollarSign, Tractor, ClipboardList } from "lucide-react";
+import { MapPin, Users, Sprout, CircleDollarSign, Tractor, ClipboardList, Bird, Milk, Layers, Fish, LucideIcon } from "lucide-react";
 import { useAppData } from "@/contexts/AppDataContext";
+
+type IconColor = "primary" | "accent" | "success" | "warning" | "info" | "destructive";
+
+interface StatCardData {
+  title: string;
+  value: string | number;
+  change: { value: number; trend: "up" | "down" };
+  icon: LucideIcon;
+  iconColor: IconColor;
+}
+
+const farmTypeLabels = {
+  crops: "Crops Farm",
+  livestock: "Livestock Farm",
+  poultry: "Poultry Farm",
+  dairy: "Dairy Farm",
+  mixed: "Mixed Farm",
+  aquaculture: "Aquaculture Farm",
+};
 
 export default function Dashboard() {
   const { farms, getStats } = useAppData();
   const stats = getStats();
 
-  const statCards = [
+  // Build dynamic stat cards based on actual farm types
+  const statCards: StatCardData[] = [
     {
       title: "Total Farms",
       value: stats.totalFarms,
-      change: { value: 12.5, trend: "up" as const },
+      change: { value: 12.5, trend: "up" },
       icon: MapPin,
-      iconColor: "primary" as const,
+      iconColor: "primary",
     },
     {
-      title: "Active Employees",
+      title: "Total Employees",
       value: stats.activeEmployees,
-      change: { value: 8.2, trend: "up" as const },
+      change: { value: 8.2, trend: "up" },
       icon: Users,
-      iconColor: "info" as const,
+      iconColor: "info",
     },
-    {
+  ];
+
+  // Add farm type cards dynamically based on what exists
+  if (stats.cropFarms > 0) {
+    statCards.push({
       title: "Crop Farms",
       value: stats.cropFarms,
-      change: { value: 4.1, trend: "up" as const },
+      change: { value: 4.1, trend: "up" },
       icon: Sprout,
-      iconColor: "success" as const,
-    },
+      iconColor: "success",
+    });
+  }
+
+  if (stats.livestockFarms > 0) {
+    statCards.push({
+      title: "Livestock Farms",
+      value: stats.livestockFarms,
+      change: { value: 3.2, trend: "up" },
+      icon: Tractor,
+      iconColor: "warning",
+    });
+  }
+
+  if (stats.poultryFarms > 0) {
+    statCards.push({
+      title: "Poultry Farms",
+      value: stats.poultryFarms,
+      change: { value: 5.0, trend: "up" },
+      icon: Bird,
+      iconColor: "info",
+    });
+  }
+
+  if (stats.dairyFarms > 0) {
+    statCards.push({
+      title: "Dairy Farms",
+      value: stats.dairyFarms,
+      change: { value: 2.5, trend: "up" },
+      icon: Milk,
+      iconColor: "accent",
+    });
+  }
+
+  if (stats.mixedFarms > 0) {
+    statCards.push({
+      title: "Mixed Farms",
+      value: stats.mixedFarms,
+      change: { value: 6.0, trend: "up" },
+      icon: Layers,
+      iconColor: "primary",
+    });
+  }
+
+  if (stats.aquacultureFarms > 0) {
+    statCards.push({
+      title: "Aquaculture Farms",
+      value: stats.aquacultureFarms,
+      change: { value: 4.0, trend: "up" },
+      icon: Fish,
+      iconColor: "info",
+    });
+  }
+
+  // Always show pending tasks and revenue
+  statCards.push(
     {
       title: "Monthly Revenue",
       value: stats.monthlyRevenue,
-      change: { value: 15.3, trend: "up" as const },
+      change: { value: 15.3, trend: "up" },
       icon: CircleDollarSign,
-      iconColor: "accent" as const,
-    },
-    {
-      title: "Livestock Farms",
-      value: stats.livestockFarms,
-      change: { value: 3.2, trend: "up" as const },
-      icon: Tractor,
-      iconColor: "warning" as const,
+      iconColor: "accent",
     },
     {
       title: "Pending Tasks",
       value: stats.pendingTasks,
-      change: { value: 2.8, trend: "down" as const },
+      change: { value: 2.8, trend: "down" },
       icon: ClipboardList,
-      iconColor: "success" as const,
-    },
-  ];
+      iconColor: "success",
+    }
+  );
 
-  // Get active farms for dashboard display (max 4)
+  // Get farms for dashboard display (max 4)
   const displayFarms = farms.slice(0, 4).map((farm) => ({
     name: farm.name,
     location: farm.location,
     size: farm.size,
     employees: farm.employees,
-    crops: farm.farmType === "crops" || farm.farmType === "mixed" ? 8 : 0,
-    livestock: farm.farmType === "livestock" || farm.farmType === "dairy" ? 245 : 0,
+    farmType: farm.farmType,
+    farmTypeLabel: farmTypeLabels[farm.farmType],
     status: farm.status,
   }));
 
