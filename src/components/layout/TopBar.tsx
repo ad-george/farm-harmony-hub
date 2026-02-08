@@ -92,7 +92,7 @@ export function TopBar({ title, subtitle }: TopBarProps) {
     : user?.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar px-6 text-sidebar-foreground">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar/80 backdrop-blur-sm px-6 text-sidebar-foreground">
       <div>
         <h1 className="text-xl font-semibold">{title}</h1>
         {subtitle && (
