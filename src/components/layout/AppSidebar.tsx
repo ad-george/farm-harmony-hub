@@ -15,6 +15,7 @@ import {
   Leaf,
   CircleDollarSign,
   Tractor,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const navItems = [
   { icon: Warehouse, label: "Inventory", path: "/inventory" },
   { icon: ClipboardList, label: "Tasks", path: "/tasks" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
+  { icon: Brain, label: "Predictions", path: "/predictions" },
   { icon: Mail, label: "Messages", path: "/messages" },
 ];
 
