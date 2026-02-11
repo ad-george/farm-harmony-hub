@@ -2,3 +2,12 @@ project_id = "woufakjuycyqnopniezf"
 
 [functions.predict-yield]
 verify_jwt = false
+
+[functions.weather-data]
+verify_jwt = false
+
+[functions.smart-irrigation]
+verify_jwt = false
+
+[functions.anomaly-detection]
+verify_jwt = false

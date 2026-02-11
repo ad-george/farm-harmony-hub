@@ -16,6 +16,9 @@ import {
   CircleDollarSign,
   Tractor,
   Brain,
+  CloudSun,
+  Droplets,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +35,9 @@ const navItems = [
   { icon: ClipboardList, label: "Tasks", path: "/tasks" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
   { icon: Brain, label: "Predictions", path: "/predictions" },
+  { icon: CloudSun, label: "Weather", path: "/weather" },
+  { icon: Droplets, label: "Irrigation", path: "/irrigation" },
+  { icon: Shield, label: "Anomalies", path: "/anomaly-detection" },
   { icon: Mail, label: "Messages", path: "/messages" },
 ];
 
