@@ -101,7 +101,7 @@ export default function Predictions() {
             name: f.name,
             location: f.location,
             size: f.size,
-            soilType: f.soilType,
+            soilType: f.type || f.farmType,
             farmType: f.farmType,
             status: f.status,
             employees: f.employees,

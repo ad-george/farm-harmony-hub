@@ -51,7 +51,7 @@ export default function Weather() {
   const fetchWeather = async () => {
     setLoading(true);
     try {
-      const locations = farms.map(f => ({ name: f.name, location: f.location, soilType: f.soilType, farmType: f.farmType }));
+      const locations = farms.map(f => ({ name: f.name, location: f.location, soilType: f.type || f.farmType, farmType: f.farmType }));
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/weather-data`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
