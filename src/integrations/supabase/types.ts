@@ -445,11 +445,19 @@ export type Database = {
         Args: { _farm_id: string; _user_id: string }
         Returns: boolean
       }
+      has_farm_access_direct: {
+        Args: { _farm_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_farm_manager: {
+        Args: { _farm_id: string; _user_id: string }
         Returns: boolean
       }
     }
