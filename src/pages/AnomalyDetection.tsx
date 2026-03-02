@@ -41,7 +41,10 @@ export default function AnomalyDetection() {
   const [filterSeverity, setFilterSeverity] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
+  const hasData = farms.length > 0;
+
   const runDetection = async () => {
+    if (!hasData) return;
     setLoading(true);
     try {
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/anomaly-detection`, {
@@ -71,7 +74,7 @@ export default function AnomalyDetection() {
   return (
     <DashboardLayout title="Anomaly Detection" subtitle="AI-powered statistical analysis to detect unusual patterns in production, finance & operations.">
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button onClick={runDetection} disabled={loading} className="bg-primary text-primary-foreground">
+        <Button onClick={runDetection} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Scanning..." : anomalies ? "Re-scan System" : "Run Anomaly Detection"}
         </Button>
@@ -106,7 +109,15 @@ export default function AnomalyDetection() {
 
       {!loading && !anomalies && (
         <Card className="text-center py-16">
-          <CardContent><Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">Anomaly Detection Engine</h3><p className="text-muted-foreground">Click "Run Anomaly Detection" to scan your entire farm system for unusual patterns and risks.</p></CardContent>
+          <CardContent>
+            <Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{hasData ? "Anomaly Detection Engine" : "No Farms Available"}</h3>
+            <p className="text-muted-foreground">
+              {hasData
+                ? 'Click "Run Anomaly Detection" to scan your entire farm system for unusual patterns and risks.'
+                : "You need to create at least one farm and add some data before anomaly detection can run. Go to the Farms page to get started."}
+            </p>
+          </CardContent>
         </Card>
       )}
 

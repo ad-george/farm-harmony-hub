@@ -48,7 +48,10 @@ export default function Irrigation() {
   const [summary, setSummary] = useState<SystemSummary | null>(null);
   const [selectedFarm, setSelectedFarm] = useState<number>(0);
 
+  const hasData = farms.length > 0;
+
   const fetchRecommendations = async () => {
+    if (!hasData) return;
     setLoading(true);
     try {
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/smart-irrigation`, {
@@ -73,7 +76,7 @@ export default function Irrigation() {
   return (
     <DashboardLayout title="Smart Irrigation" subtitle="AI-powered irrigation scheduling, water optimization & soil moisture monitoring.">
       <div className="flex items-center gap-4 mb-6">
-        <Button onClick={fetchRecommendations} disabled={loading} className="bg-primary text-primary-foreground">
+        <Button onClick={fetchRecommendations} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Analyzing..." : farmRecs ? "Refresh Analysis" : "Generate Recommendations"}
         </Button>
@@ -83,7 +86,15 @@ export default function Irrigation() {
 
       {!loading && !farmRecs && (
         <Card className="text-center py-16">
-          <CardContent><Droplets className="h-16 w-16 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">Smart Irrigation</h3><p className="text-muted-foreground">Click "Generate Recommendations" to get AI-powered irrigation schedules for all farms.</p></CardContent>
+          <CardContent>
+            <Droplets className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{hasData ? "Smart Irrigation" : "No Farms Available"}</h3>
+            <p className="text-muted-foreground">
+              {hasData
+                ? 'Click "Generate Recommendations" to get AI-powered irrigation schedules for all farms.'
+                : "You need to create at least one farm before irrigation analysis can run. Go to the Farms page to add a farm."}
+            </p>
+          </CardContent>
         </Card>
       )}
 

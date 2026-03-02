@@ -62,39 +62,36 @@ interface PredictionData {
   overallPrediction: OverallPrediction;
 }
 
-// Mock historical data to send to AI
-const historicalProductionData = [
-  { year: 2023, farm: "Kilimanjaro Green Farm", crop: "Wheat", yield: 380, unit: "tons" },
-  { year: 2023, farm: "Kilimanjaro Green Farm", crop: "Maize", yield: 220, unit: "tons" },
-  { year: 2024, farm: "Kilimanjaro Green Farm", crop: "Wheat", yield: 420, unit: "tons" },
-  { year: 2024, farm: "Kilimanjaro Green Farm", crop: "Maize", yield: 250, unit: "tons" },
-  { year: 2023, farm: "Lake Victoria Estates", crop: "Maize", yield: 580, unit: "tons" },
-  { year: 2023, farm: "Lake Victoria Estates", crop: "Rice", yield: 320, unit: "tons" },
-  { year: 2024, farm: "Lake Victoria Estates", crop: "Maize", yield: 640, unit: "tons" },
-  { year: 2024, farm: "Lake Victoria Estates", crop: "Rice", yield: 350, unit: "tons" },
-  { year: 2023, farm: "Rwenzori Highlands", crop: "Coffee", yield: 85, unit: "tons" },
-  { year: 2024, farm: "Rwenzori Highlands", crop: "Coffee", yield: 95, unit: "tons" },
-  { year: 2023, farm: "Nyungwe Valley Farm", crop: "Tea", yield: 120, unit: "tons" },
-  { year: 2024, farm: "Nyungwe Valley Farm", crop: "Tea", yield: 135, unit: "tons" },
-];
-
-// Mock crops data to send (same as in Crops page)
-const cropsData = [
-  { name: "Wheat", variety: "Winter Wheat", farm: "Kilimanjaro Green Farm", stage: "vegetative", progress: 45, area: "120 acres", expectedYield: "4,800 bushels" },
-  { name: "Maize", variety: "Highland Maize", farm: "Lake Victoria Estates", stage: "seedling", progress: 15, area: "200 acres", expectedYield: "28,000 bushels" },
-  { name: "Coffee", variety: "Arabica", farm: "Rwenzori Highlands", stage: "flowering", progress: 65, area: "150 acres", expectedYield: "6,750 kg" },
-  { name: "Tea", variety: "Black Tea", farm: "Nyungwe Valley Farm", stage: "vegetative", progress: 40, area: "25 acres", expectedYield: "75,000 kg" },
-];
 
 export default function Predictions() {
   const { farms } = useAppData();
   const [predictions, setPredictions] = useState<PredictionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedFarm, setExpandedFarm] = useState<string | null>(null);
+  const [crops, setCrops] = useState<any[]>([]);
+
+  const hasData = farms.length > 0;
 
   const generatePredictions = async () => {
     setIsLoading(true);
     try {
+      // Fetch real crops from database
+      const { data: cropsData } = await supabase
+        .from("crops")
+        .select("*, farms(name)");
+
+      const realCrops = (cropsData || []).map((c: any) => ({
+        name: c.name,
+        variety: c.variety || "",
+        farm: c.farms?.name || "Unknown",
+        area: c.area || "",
+        expectedYield: c.yield_estimate ? `${c.yield_estimate} tons` : "N/A",
+        status: c.status,
+        plantedDate: c.planted_date,
+        expectedHarvest: c.expected_harvest,
+      }));
+      setCrops(realCrops);
+
       const { data, error } = await supabase.functions.invoke("predict-yield", {
         body: {
           farms: farms.map((f) => ({
@@ -106,8 +103,8 @@ export default function Predictions() {
             status: f.status,
             employees: f.employees,
           })),
-          crops: cropsData,
-          historicalData: historicalProductionData,
+          crops: realCrops,
+          historicalData: [],
         },
       });
 
@@ -142,13 +139,15 @@ export default function Predictions() {
           <div>
             <h2 className="text-lg font-semibold text-foreground">Production Forecasting</h2>
             <p className="text-sm text-muted-foreground">
-              Click "Generate Predictions" to analyze your farm data with AI
+              {hasData
+                ? 'Click "Generate Predictions" to analyze your farm data with AI'
+                : "You need to create farms and add crops before predictions can be generated"}
             </p>
           </div>
         </div>
         <Button
           onClick={generatePredictions}
-          disabled={isLoading}
+          disabled={isLoading || !hasData}
           className="bg-primary hover:bg-primary/90"
         >
           {isLoading ? (

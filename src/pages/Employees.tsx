@@ -60,6 +60,7 @@ export default function Employees() {
   const { isOwner, isManager, canManageRoles } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [roleForm, setRoleForm] = useState({ role: "", farmId: "" });
 
@@ -124,6 +125,12 @@ export default function Employees() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search employees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
         </div>
+        {(isOwner || isManager) && (
+          <Button onClick={() => setIsInviteDialogOpen(true)} className="bg-primary text-primary-foreground">
+            <Plus className="h-4 w-4 mr-2" />
+            Invite Employee
+          </Button>
+        )}
       </div>
 
       {employees.length === 0 ? (
@@ -227,6 +234,42 @@ export default function Employees() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleUpdateRole}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Employee Dialog */}
+      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Invite a New Employee</DialogTitle>
+            <DialogDescription>
+              Share the signup link below with the person you want to invite. Once they create an account, they'll appear here automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="grid gap-2">
+              <Label>Signup Link</Label>
+              <div className="flex gap-2">
+                <Input readOnly value={`${window.location.origin}/auth`} className="font-mono text-sm" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/auth`);
+                    toast.success("Link copied to clipboard!");
+                  }}
+                >
+                  <Mail className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                The new employee should sign up using this link. After signup, you can assign them a role and farm from this page.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

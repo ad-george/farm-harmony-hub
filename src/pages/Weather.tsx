@@ -48,7 +48,10 @@ export default function Weather() {
   const [weatherData, setWeatherData] = useState<WeatherLocation[] | null>(null);
   const [selectedFarm, setSelectedFarm] = useState<string>("all");
 
+  const hasData = farms.length > 0;
+
   const fetchWeather = async () => {
+    if (!hasData) return;
     setLoading(true);
     try {
       const locations = farms.map(f => ({ name: f.name, location: f.location, soilType: f.type || f.farmType, farmType: f.farmType }));
@@ -74,7 +77,7 @@ export default function Weather() {
     <DashboardLayout title="Weather Station" subtitle="Real-time weather monitoring & agricultural climate insights for all farm locations.">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button onClick={fetchWeather} disabled={loading} className="bg-primary text-primary-foreground">
+        <Button onClick={fetchWeather} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Fetching..." : weatherData ? "Refresh Data" : "Load Weather Data"}
         </Button>
@@ -97,7 +100,15 @@ export default function Weather() {
 
       {!loading && !weatherData && (
         <Card className="text-center py-16">
-          <CardContent><Cloud className="h-16 w-16 mx-auto text-muted-foreground mb-4" /><h3 className="text-lg font-semibold mb-2">No Weather Data</h3><p className="text-muted-foreground">Click "Load Weather Data" to fetch real-time weather for all your farm locations.</p></CardContent>
+          <CardContent>
+            <Cloud className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">{hasData ? "No Weather Data" : "No Farms Available"}</h3>
+            <p className="text-muted-foreground">
+              {hasData
+                ? 'Click "Load Weather Data" to fetch real-time weather for all your farm locations.'
+                : "You need to create at least one farm before weather data can be loaded. Go to the Farms page to add a farm."}
+            </p>
+          </CardContent>
         </Card>
       )}
 
