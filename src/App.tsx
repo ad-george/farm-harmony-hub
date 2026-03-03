@@ -11,8 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Farms from "./pages/Farms";
 import Employees from "./pages/Employees";
-import Crops from "./pages/Crops";
-import Livestock from "./pages/Livestock";
+import FarmOperations from "./pages/FarmOperations";
 import Finance from "./pages/Finance";
 import Inventory from "./pages/Inventory";
 import Tasks from "./pages/Tasks";
@@ -41,8 +40,7 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/farms" element={<ProtectedRoute><Farms /></ProtectedRoute>} />
               <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
-              <Route path="/crops" element={<ProtectedRoute><Crops /></ProtectedRoute>} />
-              <Route path="/livestock" element={<ProtectedRoute><Livestock /></ProtectedRoute>} />
+              <Route path="/farm-operations" element={<ProtectedRoute><FarmOperations /></ProtectedRoute>} />
               <Route path="/finance" element={<ProtectedRoute><Finance /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />

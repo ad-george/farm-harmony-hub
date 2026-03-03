@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Mail, Phone, MoreHorizontal, Edit, Trash2, MessageSquare, Loader2, ShieldCheck } from "lucide-react";
+import { Plus, Search, Phone, MoreHorizontal, Loader2, ShieldCheck, MessageSquare, UserPlus } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,33 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -48,21 +31,19 @@ const roleConfig = {
   employee: { label: "Employee", className: "bg-info/10 text-info" },
 };
 
-const statusConfig = {
-  active: { label: "Active", className: "bg-success/10 text-success" },
-  "on-leave": { label: "On Leave", className: "bg-warning/10 text-warning" },
-  inactive: { label: "Inactive", className: "bg-muted text-muted-foreground" },
-};
-
 export default function Employees() {
   const navigate = useNavigate();
   const { employees, farms, employeesLoading, refetchEmployees } = useAppData();
   const { isOwner, isManager, canManageRoles } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [roleForm, setRoleForm] = useState({ role: "", farmId: "" });
+  const [adding, setAdding] = useState(false);
+  const [addForm, setAddForm] = useState({
+    full_name: "", email: "", password: "", phone: "", role: "employee", farm_id: "",
+  });
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -79,23 +60,12 @@ export default function Employees() {
   const handleUpdateRole = async () => {
     if (!selectedEmployee || !roleForm.role) return;
     try {
-      // Update role in user_roles
-      await supabase
-        .from("user_roles")
-        .update({ role: roleForm.role as any })
-        .eq("user_id", selectedEmployee.user_id);
-
-      // If assigning to a farm, create/update farm_assignment
+      await supabase.from("user_roles").update({ role: roleForm.role as any }).eq("user_id", selectedEmployee.user_id);
       if (roleForm.farmId) {
-        await supabase
-          .from("farm_assignments")
-          .upsert({
-            user_id: selectedEmployee.user_id,
-            farm_id: roleForm.farmId,
-            role: roleForm.role,
-          }, { onConflict: "farm_id,user_id" });
+        await supabase.from("farm_assignments").upsert({
+          user_id: selectedEmployee.user_id, farm_id: roleForm.farmId, role: roleForm.role,
+        }, { onConflict: "farm_id,user_id" });
       }
-
       toast.success(`Role updated for ${selectedEmployee.name}`);
       setIsRoleDialogOpen(false);
       await refetchEmployees();
@@ -104,16 +74,43 @@ export default function Employees() {
     }
   };
 
-  const handleSendMessage = (employeeName: string) => {
-    navigate("/messages");
+  const handleAddEmployee = async () => {
+    if (!addForm.full_name || !addForm.email || !addForm.password) {
+      toast.error("Name, email, and password are required");
+      return;
+    }
+    if (addForm.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    setAdding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-employee", {
+        body: {
+          email: addForm.email,
+          password: addForm.password,
+          full_name: addForm.full_name,
+          phone: addForm.phone,
+          role: addForm.role,
+          farm_id: addForm.farm_id || null,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`${addForm.full_name} has been added successfully`);
+      setIsAddDialogOpen(false);
+      setAddForm({ full_name: "", email: "", password: "", phone: "", role: "employee", farm_id: "" });
+      await refetchEmployees();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add employee");
+    }
+    setAdding(false);
   };
 
   if (employeesLoading) {
     return (
       <DashboardLayout title="Employees" subtitle="Manage your farm workers and staff">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       </DashboardLayout>
     );
   }
@@ -126,24 +123,26 @@ export default function Employees() {
           <Input placeholder="Search employees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
         </div>
         {(isOwner || isManager) && (
-          <Button onClick={() => setIsInviteDialogOpen(true)} className="bg-primary text-primary-foreground">
-            <Plus className="h-4 w-4 mr-2" />
-            Invite Employee
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Employee
           </Button>
         )}
       </div>
 
       {employees.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
-          <p>No team members yet. Users will appear here once they sign up.</p>
+          <UserPlus className="h-12 w-12 mx-auto mb-4 opacity-40" />
+          <p className="mb-2">No team members yet.</p>
+          {(isOwner || isManager) && (
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(true)} className="mt-2">
+              <Plus className="h-4 w-4 mr-2" /> Add your first employee
+            </Button>
+          )}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="rounded-xl bg-card shadow-card overflow-hidden"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+          className="rounded-xl bg-card shadow-card overflow-hidden border border-border">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
@@ -158,7 +157,6 @@ export default function Employees() {
               {filteredEmployees.map((employee) => {
                 const role = roleConfig[employee.role];
                 const initials = employee.name.split(" ").map((n) => n[0]).join("");
-
                 return (
                   <TableRow key={employee.id} className="hover:bg-muted/30">
                     <TableCell>
@@ -171,9 +169,7 @@ export default function Employees() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{employee.phone || "—"}</TableCell>
-                    <TableCell>
-                      <Badge className={role.className}>{role.label}</Badge>
-                    </TableCell>
+                    <TableCell><Badge className={role.className}>{role.label}</Badge></TableCell>
                     <TableCell className="text-muted-foreground">{employee.farm}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -186,7 +182,7 @@ export default function Employees() {
                               <ShieldCheck className="h-4 w-4 mr-2" /> Manage Role
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => handleSendMessage(employee.name)}>
+                          <DropdownMenuItem onClick={() => navigate("/messages")}>
                             <MessageSquare className="h-4 w-4 mr-2" /> Send Message
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -223,11 +219,7 @@ export default function Employees() {
               <Label>Assign to Farm</Label>
               <Select value={roleForm.farmId} onValueChange={(v) => setRoleForm((p) => ({ ...p, farmId: v }))}>
                 <SelectTrigger><SelectValue placeholder="Select farm" /></SelectTrigger>
-                <SelectContent>
-                  {farms.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                  ))}
-                </SelectContent>
+                <SelectContent>{farms.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
@@ -238,38 +230,56 @@ export default function Employees() {
         </DialogContent>
       </Dialog>
 
-      {/* Invite Employee Dialog */}
-      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent className="sm:max-w-[450px]">
+      {/* Add Employee Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Invite a New Employee</DialogTitle>
-            <DialogDescription>
-              Share the signup link below with the person you want to invite. Once they create an account, they'll appear here automatically.
-            </DialogDescription>
+            <DialogTitle>Add New Employee</DialogTitle>
+            <DialogDescription>Create an account for a new team member. They'll be able to log in with the credentials you set.</DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="grid gap-2">
-              <Label>Signup Link</Label>
-              <div className="flex gap-2">
-                <Input readOnly value={`${window.location.origin}/auth`} className="font-mono text-sm" />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/auth`);
-                    toast.success("Link copied to clipboard!");
-                  }}
-                >
-                  <Mail className="h-4 w-4" />
-                </Button>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label>Full Name *</Label>
+              <Input value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="e.g., John Doe" />
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} placeholder="john@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Password *</Label>
+              <Input type="password" value={addForm.password} onChange={e => setAddForm({ ...addForm, password: e.target.value })} placeholder="Min 6 characters" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} placeholder="+254 700 000 000" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Select value={addForm.role} onValueChange={v => setAddForm({ ...addForm, role: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">Employee</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-xs text-muted-foreground">
-                The new employee should sign up using this link. After signup, you can assign them a role and farm from this page.
-              </p>
+              <div className="space-y-2">
+                <Label>Assign to Farm</Label>
+                <Select value={addForm.farm_id} onValueChange={v => setAddForm({ ...addForm, farm_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+                  <SelectContent>{farms.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddEmployee} disabled={adding}>
+              {adding && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Add Employee
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
