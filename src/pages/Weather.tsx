@@ -41,16 +41,38 @@ interface WeatherLocation {
   };
 }
 
+const CACHE_KEY = "weather_cache";
+const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+
+function getCachedWeather(): { data: WeatherLocation[]; timestamp: number } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp < CACHE_TTL) return parsed;
+    localStorage.removeItem(CACHE_KEY);
+    return null;
+  } catch { return null; }
+}
+
+function setCachedWeather(data: WeatherLocation[]) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
+
 export default function Weather() {
   const { farms } = useAppData();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [weatherData, setWeatherData] = useState<WeatherLocation[] | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherLocation[] | null>(() => getCachedWeather()?.data ?? null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    const cached = getCachedWeather();
+    return cached ? new Date(cached.timestamp) : null;
+  });
   const [selectedFarm, setSelectedFarm] = useState<string>("all");
 
   const hasData = farms.length > 0;
 
-  const fetchWeather = async () => {
+  const fetchWeather = async (isRefresh = false) => {
     if (!hasData) return;
     setLoading(true);
     try {
@@ -63,7 +85,10 @@ export default function Weather() {
       if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || "Failed to fetch weather"); }
       const data = await resp.json();
       setWeatherData(data.locations);
-      toast({ title: "Weather Updated", description: "Real-time weather data loaded for all farm locations." });
+      setCachedWeather(data.locations);
+      const now = new Date();
+      setLastUpdated(now);
+      toast({ title: isRefresh ? "Weather Refreshed" : "Weather Updated", description: "Real-time weather data loaded for all farm locations." });
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed to load weather", variant: "destructive" });
     } finally {
