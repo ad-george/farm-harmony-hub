@@ -102,7 +102,7 @@ export default function Weather() {
     <DashboardLayout title="Weather Station" subtitle="Real-time weather monitoring & agricultural climate insights for all farm locations.">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button onClick={fetchWeather} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
+        <Button onClick={() => fetchWeather(!weatherData)} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Fetching..." : weatherData ? "Refresh Data" : "Load Weather Data"}
         </Button>
@@ -114,6 +114,11 @@ export default function Weather() {
               {weatherData.map(w => <SelectItem key={w.name} value={w.name}>{w.name}</SelectItem>)}
             </SelectContent>
           </Select>
+        )}
+        {lastUpdated && (
+          <p className="text-xs text-muted-foreground">
+            Last updated: {lastUpdated.toLocaleString()} · Cached for 12 hours
+          </p>
         )}
       </div>
 
