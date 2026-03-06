@@ -41,16 +41,38 @@ interface WeatherLocation {
   };
 }
 
+const CACHE_KEY = "weather_cache";
+const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+
+function getCachedWeather(): { data: WeatherLocation[]; timestamp: number } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp < CACHE_TTL) return parsed;
+    localStorage.removeItem(CACHE_KEY);
+    return null;
+  } catch { return null; }
+}
+
+function setCachedWeather(data: WeatherLocation[]) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
+
 export default function Weather() {
   const { farms } = useAppData();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [weatherData, setWeatherData] = useState<WeatherLocation[] | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherLocation[] | null>(() => getCachedWeather()?.data ?? null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    const cached = getCachedWeather();
+    return cached ? new Date(cached.timestamp) : null;
+  });
   const [selectedFarm, setSelectedFarm] = useState<string>("all");
 
   const hasData = farms.length > 0;
 
-  const fetchWeather = async () => {
+  const fetchWeather = async (isRefresh = false) => {
     if (!hasData) return;
     setLoading(true);
     try {
@@ -63,7 +85,10 @@ export default function Weather() {
       if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || "Failed to fetch weather"); }
       const data = await resp.json();
       setWeatherData(data.locations);
-      toast({ title: "Weather Updated", description: "Real-time weather data loaded for all farm locations." });
+      setCachedWeather(data.locations);
+      const now = new Date();
+      setLastUpdated(now);
+      toast({ title: isRefresh ? "Weather Refreshed" : "Weather Updated", description: "Real-time weather data loaded for all farm locations." });
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed to load weather", variant: "destructive" });
     } finally {
@@ -77,7 +102,7 @@ export default function Weather() {
     <DashboardLayout title="Weather Station" subtitle="Real-time weather monitoring & agricultural climate insights for all farm locations.">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button onClick={fetchWeather} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
+        <Button onClick={() => fetchWeather(!weatherData)} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Fetching..." : weatherData ? "Refresh Data" : "Load Weather Data"}
         </Button>
@@ -89,6 +114,11 @@ export default function Weather() {
               {weatherData.map(w => <SelectItem key={w.name} value={w.name}>{w.name}</SelectItem>)}
             </SelectContent>
           </Select>
+        )}
+        {lastUpdated && (
+          <p className="text-xs text-muted-foreground">
+            Last updated: {lastUpdated.toLocaleString()} · Cached for 12 hours
+          </p>
         )}
       </div>
 
