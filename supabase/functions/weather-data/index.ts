@@ -9,31 +9,17 @@ const corsHeaders = {
 interface FarmLocation {
   name: string;
   location: string;
-  soilType?: string;
-  farmType?: string;
 }
 
-function mapOwmCondition(main: string): string {
-  const map: Record<string, string> = {
-    Clear: "Sunny",
-    Clouds: "Cloudy",
-    Rain: "Rainy",
-    Drizzle: "Rainy",
-    Thunderstorm: "Thunderstorm",
-    Mist: "Foggy",
-    Fog: "Foggy",
-    Haze: "Foggy",
-    Snow: "Cloudy",
-  };
-  return map[main] || "Partly Cloudy";
-}
-
-function getDayAbbr(dt: number): string {
-  return new Date(dt * 1000).toLocaleDateString("en-US", { weekday: "short" });
-}
-
-function getHourLabel(dt: number): string {
-  return new Date(dt * 1000).toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+function mapCondition(text: string): string {
+  const t = text.toLowerCase();
+  if (t.includes("sunny") || t.includes("clear")) return "Sunny";
+  if (t.includes("thunder") || t.includes("lightning")) return "Thunderstorm";
+  if (t.includes("rain") || t.includes("drizzle") || t.includes("shower")) return "Rainy";
+  if (t.includes("fog") || t.includes("mist") || t.includes("haze")) return "Foggy";
+  if (t.includes("partly") || t.includes("patchy")) return "Partly Cloudy";
+  if (t.includes("overcast") || t.includes("cloudy")) return "Cloudy";
+  return "Partly Cloudy";
 }
 
 serve(async (req) => {
@@ -43,82 +29,76 @@ serve(async (req) => {
 
   try {
     const { locations } = await req.json() as { locations: FarmLocation[] };
-    const OWM_KEY = Deno.env.get("OPENWEATHERMAP_API_KEY");
-    if (!OWM_KEY) throw new Error("OPENWEATHERMAP_API_KEY is not configured");
+    const API_KEY = Deno.env.get("WEATHERAPI_KEY");
+    if (!API_KEY) throw new Error("WEATHERAPI_KEY is not configured");
 
     const weatherLocations = await Promise.all(
       locations.map(async (farm) => {
-        const locQuery = farm.location || farm.name;
+        const query = farm.location || farm.name;
 
-        // 1. Get current weather
-        const currentRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locQuery)}&units=metric&appid=${OWM_KEY}`
+        const res = await fetch(
+          `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(query)}&days=7&aqi=no&alerts=yes`
         );
-        if (!currentRes.ok) {
-          const errText = await currentRes.text();
-          console.error(`OWM current error for ${locQuery}:`, currentRes.status, errText);
-          throw new Error(`Could not fetch weather for "${locQuery}". Make sure the location name is a valid city/town.`);
+        if (!res.ok) {
+          const err = await res.text();
+          console.error(`WeatherAPI error for ${query}:`, res.status, err);
+          throw new Error(`Could not fetch weather for "${query}". Please check the location name.`);
         }
-        const currentData = await currentRes.json();
+        const data = await res.json();
+        const current = data.current;
+        const forecast = data.forecast.forecastday;
 
-        const { coord } = currentData;
+        // Hourly forecast — pick 6 spread-out hours from today
+        const todayHours = forecast[0]?.hour || [];
+        const hourIndices = [6, 9, 12, 15, 18, 21];
+        const hourlyForecast = hourIndices.map((h) => {
+          const entry = todayHours[h];
+          if (!entry) return { hour: `${h > 12 ? h - 12 : h}${h >= 12 ? "PM" : "AM"}`, temp: 0, condition: "Cloudy", rainChance: 0 };
+          return {
+            hour: new Date(entry.time).toLocaleTimeString("en-US", { hour: "numeric", hour12: true }),
+            temp: Math.round(entry.temp_c),
+            condition: mapCondition(entry.condition.text),
+            rainChance: entry.chance_of_rain,
+          };
+        });
 
-        // 2. Get 5-day / 3-hour forecast
-        const forecastRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/forecast?lat=${coord.lat}&lon=${coord.lon}&units=metric&appid=${OWM_KEY}`
-        );
-        const forecastData = await forecastRes.json();
-
-        // Build hourly forecast (next 6 entries = ~18 hours)
-        const hourlyForecast = forecastData.list.slice(0, 6).map((entry: any) => ({
-          hour: getHourLabel(entry.dt),
-          temp: Math.round(entry.main.temp),
-          condition: mapOwmCondition(entry.weather[0].main),
-          rainChance: Math.round((entry.pop || 0) * 100),
+        // Weekly forecast
+        const weeklyForecast = forecast.map((day: any) => ({
+          day: new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }),
+          high: Math.round(day.day.maxtemp_c),
+          low: Math.round(day.day.mintemp_c),
+          condition: mapCondition(day.day.condition.text),
+          rainChance: day.day.daily_chance_of_rain,
+          rainfall: day.day.totalprecip_mm,
         }));
 
-        // Build weekly forecast (aggregate by day)
-        const dayMap: Record<string, { highs: number[]; lows: number[]; conditions: string[]; pops: number[]; rain: number }> = {};
-        for (const entry of forecastData.list) {
-          const day = getDayAbbr(entry.dt);
-          if (!dayMap[day]) dayMap[day] = { highs: [], lows: [], conditions: [], pops: [], rain: 0 };
-          dayMap[day].highs.push(entry.main.temp_max);
-          dayMap[day].lows.push(entry.main.temp_min);
-          dayMap[day].conditions.push(entry.weather[0].main);
-          dayMap[day].pops.push(entry.pop || 0);
-          dayMap[day].rain += entry.rain?.["3h"] || 0;
-        }
-
-        const weeklyForecast = Object.entries(dayMap).slice(0, 7).map(([day, data]) => ({
-          day,
-          high: Math.round(Math.max(...data.highs)),
-          low: Math.round(Math.min(...data.lows)),
-          condition: mapOwmCondition(
-            data.conditions.sort((a, b) =>
-              data.conditions.filter(v => v === b).length - data.conditions.filter(v => v === a).length
-            )[0]
-          ),
-          rainChance: Math.round(Math.max(...data.pops) * 100),
-          rainfall: Math.round(data.rain * 10) / 10,
-        }));
-
-        // Weather alerts (simple heuristic-based)
+        // Alerts
         const alerts: { type: string; severity: string; message: string }[] = [];
-        const temp = currentData.main.temp;
-        const humidity = currentData.main.humidity;
-        const windSpeed = (currentData.wind?.speed || 0) * 3.6; // m/s -> km/h
+        const temp_c = current.temp_c;
+        const humidity = current.humidity;
+        const wind_kph = current.wind_kph;
 
-        if (temp > 35) alerts.push({ type: "heatwave", severity: "high", message: `Extreme heat at ${Math.round(temp)}°C. Ensure livestock shade and crop irrigation.` });
-        if (temp < 5) alerts.push({ type: "frost", severity: "medium", message: `Low temperature risk at ${Math.round(temp)}°C. Protect frost-sensitive crops.` });
+        if (data.alerts?.alert?.length) {
+          for (const a of data.alerts.alert) {
+            alerts.push({
+              type: a.event?.toLowerCase().includes("flood") ? "flood" : a.event?.toLowerCase().includes("heat") ? "heatwave" : "storm",
+              severity: a.severity === "Extreme" ? "high" : a.severity === "Severe" ? "high" : "medium",
+              message: a.headline || a.desc || a.event,
+            });
+          }
+        }
+
+        if (temp_c > 35) alerts.push({ type: "heatwave", severity: "high", message: `Extreme heat at ${Math.round(temp_c)}°C. Ensure livestock shade and crop irrigation.` });
+        if (temp_c < 5) alerts.push({ type: "frost", severity: "medium", message: `Low temperature risk at ${Math.round(temp_c)}°C. Protect frost-sensitive crops.` });
         if (humidity > 90) alerts.push({ type: "flood", severity: "medium", message: `Very high humidity (${humidity}%). Monitor for waterlogging.` });
-        if (windSpeed > 50) alerts.push({ type: "storm", severity: "high", message: `Strong winds at ${Math.round(windSpeed)} km/h. Secure structures.` });
-        if (humidity < 30 && temp > 30) alerts.push({ type: "drought", severity: "medium", message: `Hot and dry conditions. Increase irrigation.` });
-        if (alerts.length === 0) alerts.push({ type: "none", severity: "low", message: "No weather alerts. Conditions are favorable." });
+        if (wind_kph > 50) alerts.push({ type: "storm", severity: "high", message: `Strong winds at ${Math.round(wind_kph)} km/h. Secure structures.` });
+        if (alerts.length === 0) alerts.push({ type: "none", severity: "low", message: "No weather alerts. Conditions are favorable for farming." });
 
-        // Agricultural metrics (estimated from real weather)
-        const rainMm = currentData.rain?.["1h"] || currentData.rain?.["3h"] || 0;
-        const soilMoisture = Math.min(100, Math.round(humidity * 0.7 + rainMm * 5));
-        const evapotranspiration = Math.round((0.0023 * (temp + 17.8) * Math.sqrt(Math.max(1, currentData.main.temp_max - currentData.main.temp_min)) * 10) * 10) / 10;
+        // Agricultural metrics
+        const precip = current.precip_mm || 0;
+        const soilMoisture = Math.min(100, Math.round(humidity * 0.7 + precip * 5));
+        const tempRange = (forecast[0]?.day?.maxtemp_c || temp_c) - (forecast[0]?.day?.mintemp_c || temp_c);
+        const evapotranspiration = Math.round((0.0023 * (temp_c + 17.8) * Math.sqrt(Math.max(1, tempRange)) * 10) * 10) / 10;
 
         let irrigationNeed = "none";
         if (soilMoisture < 30) irrigationNeed = "critical";
@@ -127,24 +107,24 @@ serve(async (req) => {
         else if (soilMoisture < 75) irrigationNeed = "low";
 
         let frostRisk = "none";
-        if (temp < 2) frostRisk = "high";
-        else if (temp < 5) frostRisk = "medium";
-        else if (temp < 10) frostRisk = "low";
+        if (temp_c < 2) frostRisk = "high";
+        else if (temp_c < 5) frostRisk = "medium";
+        else if (temp_c < 10) frostRisk = "low";
 
         return {
           name: farm.name,
           current: {
-            temperature: Math.round(currentData.main.temp),
-            feelsLike: Math.round(currentData.main.feels_like),
-            humidity: currentData.main.humidity,
-            windSpeed: Math.round(windSpeed),
-            windDirection: getWindDirection(currentData.wind?.deg || 0),
-            pressure: currentData.main.pressure,
-            uvIndex: 0, // Not available in free tier
-            visibility: Math.round((currentData.visibility || 10000) / 1000),
-            condition: mapOwmCondition(currentData.weather[0].main),
-            rainChance: Math.round((forecastData.list[0]?.pop || 0) * 100),
-            rainfall: rainMm,
+            temperature: Math.round(current.temp_c),
+            feelsLike: Math.round(current.feelslike_c),
+            humidity: current.humidity,
+            windSpeed: Math.round(current.wind_kph),
+            windDirection: current.wind_dir,
+            pressure: current.pressure_mb,
+            uvIndex: current.uv,
+            visibility: current.vis_km,
+            condition: mapCondition(current.condition.text),
+            rainChance: forecast[0]?.day?.daily_chance_of_rain || 0,
+            rainfall: current.precip_mm,
           },
           hourlyForecast,
           weeklyForecast,
@@ -152,7 +132,7 @@ serve(async (req) => {
           agriculturalMetrics: {
             soilMoisture,
             evapotranspiration,
-            growingDegreeDays: Math.max(0, Math.round(((currentData.main.temp_max + currentData.main.temp_min) / 2) - 10)),
+            growingDegreeDays: Math.max(0, Math.round(((forecast[0]?.day?.maxtemp_c || temp_c) + (forecast[0]?.day?.mintemp_c || temp_c)) / 2 - 10)),
             frostRisk,
             irrigationNeed,
           },
@@ -172,8 +152,3 @@ serve(async (req) => {
     );
   }
 });
-
-function getWindDirection(deg: number): string {
-  const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-  return dirs[Math.round(deg / 22.5) % 16];
-}
