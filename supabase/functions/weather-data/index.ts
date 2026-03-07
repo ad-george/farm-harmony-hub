@@ -39,23 +39,36 @@ serve(async (req) => {
 
     const weatherLocations = await Promise.all(
       locations.map(async (farm) => {
-        const query = farm.location || farm.name;
+        const rawQuery = farm.location || farm.name;
 
         // Step 1: Geocode the location using Open-Meteo geocoding
-        const geoRes = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`
-        );
-        if (!geoRes.ok) {
-          const errText = await geoRes.text();
-          console.error(`Geocoding error for ${query}:`, geoRes.status, errText);
-          throw new Error(`Could not find location "${query}".`);
-        }
-        const geoData = await geoRes.json();
-        if (!geoData.results || geoData.results.length === 0) {
-          throw new Error(`Location "${query}" not found. Try a different city name.`);
+        // Try with ', Kenya' suffix first for regional precision, then fall back to raw query
+        let geoData: any = null;
+        let matchedResult: any = null;
+
+        for (const query of [`${rawQuery}, Kenya`, rawQuery]) {
+          const geoRes = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`
+          );
+          if (!geoRes.ok) {
+            const errText = await geoRes.text();
+            console.error(`Geocoding error for ${query}:`, geoRes.status, errText);
+            continue;
+          }
+          geoData = await geoRes.json();
+          if (geoData.results && geoData.results.length > 0) {
+            // Prefer results in Kenya (country_code: KE)
+            matchedResult = geoData.results.find((r: any) => r.country_code === "KE") || geoData.results[0];
+            break;
+          }
         }
 
-        const { latitude, longitude, name: geoName } = geoData.results[0];
+        if (!matchedResult) {
+          throw new Error(`Location "${rawQuery}" not found. Try a more specific name like "Meru, Kenya".`);
+        }
+
+        const { latitude, longitude, name: geoName, country_code } = matchedResult;
+        console.log(`Geocoded "${rawQuery}" → ${geoName} (${country_code}) at ${latitude}, ${longitude}`);
 
         // Step 2: Get current weather + forecast from Open-Meteo
         const weatherRes = await fetch(
