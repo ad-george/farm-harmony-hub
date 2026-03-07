@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useSidebarState } from "@/contexts/SidebarContext";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -45,8 +45,7 @@ const bottomNavItems = [
 ];
 
 export function AppSidebar() {
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebarState();
 
   return (
     <motion.aside
@@ -74,7 +73,7 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggle}
           className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <ChevronLeft
