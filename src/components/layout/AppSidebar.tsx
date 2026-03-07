@@ -44,8 +44,7 @@ const bottomNavItems = [
 ];
 
 export function AppSidebar() {
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebarState();
 
   return (
     <motion.aside
