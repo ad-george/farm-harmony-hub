@@ -593,7 +593,7 @@ export default function Reports() {
           <DialogHeader>
             <DialogTitle>How Reports Are Generated</DialogTitle>
             <DialogDescription>
-              Understanding the report generation process in FarmFlow
+              Understanding the report generation process in DigiFarm
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
