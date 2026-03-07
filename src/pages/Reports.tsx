@@ -255,7 +255,7 @@ export default function Reports() {
       }
     });
 
-    downloadFile(`FarmFlow_All_Reports_${selectedYear}.csv`, combined);
+    downloadFile(`DigiFarm_All_Reports_${selectedYear}.csv`, combined);
     toast({
       title: "All Reports Exported",
       description: `${generatedReports.length} reports have been combined and downloaded.`,
@@ -593,7 +593,7 @@ export default function Reports() {
           <DialogHeader>
             <DialogTitle>How Reports Are Generated</DialogTitle>
             <DialogDescription>
-              Understanding the report generation process in FarmFlow
+              Understanding the report generation process in DigiFarm
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">

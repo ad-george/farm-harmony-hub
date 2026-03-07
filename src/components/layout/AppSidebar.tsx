@@ -67,7 +67,7 @@ export function AppSidebar() {
               animate={{ opacity: 1 }}
               className="text-lg font-semibold"
             >
-              FarmFlow
+              DigiFarm
             </motion.span>
           )}
         </Link>

@@ -169,7 +169,7 @@ export default function Auth() {
               <Leaf className="h-7 w-7 text-primary-foreground" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">FarmFlow</h1>
+          <h1 className="text-2xl font-bold text-foreground">DigiFarm</h1>
           <p className="text-muted-foreground">Farm Management System</p>
         </div>
 

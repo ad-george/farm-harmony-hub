@@ -48,7 +48,7 @@ export default function Landing() {
           <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shadow-md">
             <Leaf className="h-6 w-6 text-accent-foreground" />
           </div>
-          <span className="text-xl font-bold text-primary-foreground">FarmFlow</span>
+          <span className="text-xl font-bold text-primary-foreground">DigiFarm</span>
         </div>
         
         <p className="hidden md:block text-primary-foreground/90 text-sm font-medium">
@@ -110,7 +110,7 @@ export default function Landing() {
       {/* Footer text */}
       <div className="relative z-10 text-center pb-4">
         <p className="text-white/60 text-xs">
-          © 2024 FarmFlow. All rights reserved.
+          © 2024 DigiFarm. All rights reserved.
         </p>
       </div>
     </div>
