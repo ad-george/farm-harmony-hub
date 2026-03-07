@@ -255,7 +255,7 @@ export default function Reports() {
       }
     });
 
-    downloadFile(`FarmFlow_All_Reports_${selectedYear}.csv`, combined);
+    downloadFile(`DigiFarm_All_Reports_${selectedYear}.csv`, combined);
     toast({
       title: "All Reports Exported",
       description: `${generatedReports.length} reports have been combined and downloaded.`,
