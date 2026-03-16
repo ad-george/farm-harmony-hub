@@ -167,17 +167,18 @@ Example layout:
 
 Then embed them like this:
 
-```markdown
-## Landing page
-![Landing page](screenshots/landingpage.png)
+# 📸 Screenshots
 
-## Dashboard
-![ Dashboard](screenshots/dashboard.png)
+### Landing Page
+<p align="center">
+  <img src="screenshots/landingpage.png" width="80%"/>
+</p>
 
-## Weather forcast
-!Weather forcast](screenshots/weather.png)
-```
-
+### Dashboard & Weather Forecast
+<p align="center">
+  <img src="screenshots/dashboard.png" width="45%"/>
+  <img src="screenshots/weather.png" width="45%"/>
+</p>
 
 # 🏗 System Architecture
 
