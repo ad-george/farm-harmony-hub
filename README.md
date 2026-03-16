@@ -19,7 +19,6 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
 </p>
 
----
 
 # 📖 Overview
 
@@ -39,7 +38,6 @@ The platform enables farmers to:
 * Get **AI-powered irrigation suggestions**
 * Predict **mixed farm production outputs**
 
----
 
 # 🚜 Core Features
 
@@ -52,7 +50,6 @@ Manage and monitor **multiple farms from a single dashboard**.
 * Farm-specific analytics
 * Centralized farm monitoring
 
----
 
 ## 🌾 Crop Management
 
@@ -63,7 +60,6 @@ Track and optimize crop production.
 * Harvest tracking
 * Yield analysis and prediction
 
----
 
 ## 🐄 Livestock Management
 
@@ -74,7 +70,6 @@ Monitor livestock productivity and health.
 * Feeding schedules
 * Health monitoring
 
----
 
 ## 🐔 Poultry Management
 
@@ -85,7 +80,6 @@ Tools specifically designed for poultry operations.
 * Feeding and health monitoring
 * Mortality tracking
 
----
 
 ## 🌾 Mixed Farm Production Prediction
 
@@ -98,7 +92,6 @@ Includes predictions for:
 * Poultry production
 * Overall farm productivity
 
----
 
 ## 📦 Inventory Management
 
@@ -109,7 +102,6 @@ Track all farm inputs and resources.
 * Feed and fertilizer management
 * Low stock alerts
 
----
 
 ## 💰 Financial Management
 
@@ -120,7 +112,6 @@ Track the financial health of each farm.
 * Profit and loss analysis
 * Financial dashboards
 
----
 
 ## 📋 Task Management
 
@@ -131,7 +122,6 @@ Organize farm activities and workers.
 * Worker coordination
 * Task progress tracking
 
----
 
 ## 🌦 Weather Forecasting
 
@@ -142,7 +132,6 @@ Weather intelligence based on **farm location**.
 * Temperature monitoring
 * Climate risk alerts
 
----
 
 ## 🚨 Anomaly Detection
 
@@ -157,7 +146,6 @@ Examples include:
 
 This helps farmers **identify issues early and respond quickly**.
 
----
 
 ## 💧 Smart Irrigation Suggestions
 
@@ -169,7 +157,6 @@ The system analyzes:
 
 to provide **optimized irrigation recommendations** for each farm.
 
----
 
 # 📸 Screenshots
 
@@ -181,17 +168,16 @@ Example layout:
 Then embed them like this:
 
 ```markdown
+## Landing page
+![Landing page](screenshots/landingpage.png)
+
 ## Dashboard
-![Dashboard](screenshots/landingpage.png)
+![ Dashboard](screenshots/dashboard.png)
 
-## Farm Overview
-![Farm Overview](screenshots/dashboard.png)
-
-## Crop Management
-![Crop Management](screenshots/weather.png)
+## Weather forcast
+!Weather forcast](screenshots/weather.png)
 ```
 
----
 
 # 🏗 System Architecture
 
@@ -220,7 +206,6 @@ Then embed them like this:
    └─────────────────┘                   └──────────────────┘
 ```
 
----
 
 # 🛠 Technology Stack
 
@@ -240,7 +225,6 @@ The project is built with modern web technologies.
 * Weather API integration
 * Farm IoT integration
 
----
 
 # ⚙️ Installation
 
@@ -250,7 +234,6 @@ The project is built with modern web technologies.
 git clone <YOUR_REPOSITORY_URL>
 ```
 
----
 
 ## 2️⃣ Navigate to Project Directory
 
@@ -258,7 +241,6 @@ git clone <YOUR_REPOSITORY_URL>
 cd farm-harmony-hub
 ```
 
----
 
 ## 3️⃣ Install Dependencies
 
@@ -266,7 +248,6 @@ cd farm-harmony-hub
 npm install
 ```
 
----
 
 ## 4️⃣ Run Development Server
 
@@ -280,7 +261,6 @@ The application will run at:
 http://localhost:8080
 ```
 
----
 
 # 📊 Use Cases
 
@@ -292,7 +272,6 @@ This platform can be used by:
 * Agricultural researchers
 * Smart farming initiatives
 
----
 
 # 🔮 Future Improvements
 
@@ -306,7 +285,6 @@ Planned future features include:
 * Farm product marketplace
 * Drone monitoring integration
 
----
 
 # 🤝 Contributing
 
@@ -333,13 +311,11 @@ git push origin feature-name
 
 5. Open a Pull Request
 
----
 
 # 📄 License
 
 This project is licensed under the **MIT License**.
 
----
 
 # 🌍 Vision
 
