@@ -178,27 +178,17 @@ to provide **optimized irrigation recommendations** for each farm.
 
 Example layout:
 
-```
-/screenshots
-
-dashboard.png
-farm-overview.png
-crop-management.png
-livestock-dashboard.png
-financial-dashboard.png
-```
-
 Then embed them like this:
 
 ```markdown
 ## Dashboard
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](screenshots/landingpage.png)
 
 ## Farm Overview
-![Farm Overview](screenshots/farm-overview.png)
+![Farm Overview](screenshots/dashboard.png)
 
 ## Crop Management
-![Crop Management](screenshots/crop-management.png)
+![Crop Management](screenshots/weather.png)
 ```
 
 ---
