@@ -175,6 +175,7 @@ to provide **optimized irrigation recommendations** for each farm.
 
 *(Add your screenshots here once available)*
 
+
 Example layout:
 
 ```
