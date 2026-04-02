@@ -117,7 +117,7 @@ export default function Weather() {
         )}
         {lastUpdated && (
           <p className="text-xs text-muted-foreground">
-            Last updated: {lastUpdated.toLocaleString()} · Cached for 12 hours
+            Last updated: {lastUpdated.toLocaleString()} · Cached for 30 minutes
           </p>
         )}
       </div>

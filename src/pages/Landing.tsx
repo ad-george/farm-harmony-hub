@@ -110,7 +110,7 @@ export default function Landing() {
       {/* Footer text */}
       <div className="relative z-10 text-center pb-4">
         <p className="text-white/60 text-xs">
-          © 2024 DigiFarm. All rights reserved.
+          © {new Date().getFullYear()} DigiFarm. All rights reserved.
         </p>
       </div>
     </div>
