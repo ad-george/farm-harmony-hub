@@ -42,7 +42,7 @@ interface WeatherLocation {
 }
 
 const CACHE_KEY = "weather_cache";
-const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes for more accurate data
 
 function getCachedWeather(): { data: WeatherLocation[]; timestamp: number } | null {
   try {
