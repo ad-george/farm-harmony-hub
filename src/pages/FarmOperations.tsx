@@ -453,14 +453,14 @@ export default function FarmOperations() {
 
       {/* ── Add/Edit Dialog ── */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{editingItem ? "Edit" : "Add"} {activeCat.label}</DialogTitle>
             <DialogDescription>{editingItem ? "Update the details" : `Add a new ${activeCat.label.toLowerCase()} record`}</DialogDescription>
           </DialogHeader>
 
           {activeCat.dataSource === "crops" ? (
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-3 py-2 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Name *</Label><Input value={cropForm.name} onChange={e => setCropForm({ ...cropForm, name: e.target.value })} placeholder="e.g., Maize" /></div>
                 <div className="space-y-2"><Label>Variety</Label><Input value={cropForm.variety} onChange={e => setCropForm({ ...cropForm, variety: e.target.value })} /></div>
@@ -494,7 +494,7 @@ export default function FarmOperations() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-3 py-2 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Type *</Label><Input value={livestockForm.type} onChange={e => setLivestockForm({ ...livestockForm, type: e.target.value })} placeholder={`e.g., ${activeCat.filter || "Cattle"}`} /></div>
                 <div className="space-y-2"><Label>Breed</Label><Input value={livestockForm.breed} onChange={e => setLivestockForm({ ...livestockForm, breed: e.target.value })} /></div>

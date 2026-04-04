@@ -102,6 +102,8 @@ interface AppDataContextType {
   sendMessage: (recipientId: string, content: string, farmId?: string) => Promise<void>;
   markConversationAsRead: (recipientId: string) => Promise<void>;
   getTotalUnreadCount: () => number;
+  deleteMessage: (messageId: string) => Promise<void>;
+  deleteConversation: (partnerId: string) => Promise<void>;
   refetchMessages: () => Promise<void>;
 
   // Activities (derived from recent actions)
@@ -438,6 +440,31 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return conversations.reduce((total, conv) => total + conv.unread, 0);
   };
 
+  const deleteMessage = async (messageId: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("messages").delete().eq("id", messageId);
+    if (error) throw error;
+    await refetchMessages();
+  };
+
+  const deleteConversation = async (partnerId: string) => {
+    if (!user) return;
+    // Delete all messages where user is sender or recipient with this partner
+    const { error: err1 } = await supabase
+      .from("messages")
+      .delete()
+      .eq("sender_id", user.id)
+      .eq("recipient_id", partnerId);
+    const { error: err2 } = await supabase
+      .from("messages")
+      .delete()
+      .eq("sender_id", partnerId)
+      .eq("recipient_id", user.id);
+    if (err1) throw err1;
+    if (err2) throw err2;
+    await refetchMessages();
+  };
+
   // ===================== FINANCE STATS =====================
   const fetchFinanceStats = useCallback(async () => {
     if (!user) return;
@@ -536,6 +563,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         sendMessage,
         markConversationAsRead,
         getTotalUnreadCount,
+        deleteMessage,
+        deleteConversation,
         refetchMessages,
         activities,
         getStats,

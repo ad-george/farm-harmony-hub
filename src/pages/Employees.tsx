@@ -232,12 +232,12 @@ export default function Employees() {
 
       {/* Add Employee Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Add New Employee</DialogTitle>
-            <DialogDescription>Create an account for a new team member. They'll be able to log in with the credentials you set.</DialogDescription>
+            <DialogDescription>Create an account for a new team member.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 py-2 overflow-y-auto flex-1">
             <div className="space-y-2">
               <Label>Full Name *</Label>
               <Input value={addForm.full_name} onChange={e => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="e.g., John Doe" />

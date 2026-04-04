@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Send, Search, MoreHorizontal, Check, CheckCheck, Plus, UserPlus, Trash2, Loader2 } from "lucide-react";
+import { Send, Search, MoreHorizontal, Check, CheckCheck, UserPlus, Trash2, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,18 +14,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Messages() {
   const { user } = useAuth();
-  const { conversations, employees, sendMessage, markConversationAsRead, getTotalUnreadCount } = useAppData();
+  const { conversations, employees, sendMessage, markConversationAsRead, getTotalUnreadCount, deleteMessage, deleteConversation } = useAppData();
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [initialMessage, setInitialMessage] = useState("");
+  const [deleteConvDialogOpen, setDeleteConvDialogOpen] = useState(false);
+  const [deletingConv, setDeletingConv] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const selectedConversation = conversations.find((c) => c.id === selectedConvId) || null;
@@ -69,6 +71,25 @@ export default function Messages() {
     toast.success(`Conversation started with ${employee.name}`);
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessage(messageId);
+      toast.success("Message deleted");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation) return;
+    setDeletingConv(true);
+    try {
+      await deleteConversation(selectedConversation.participant.user_id);
+      setSelectedConvId(null);
+      setDeleteConvDialogOpen(false);
+      toast.success("Conversation deleted");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setDeletingConv(false); }
+  };
+
   const totalUnread = getTotalUnreadCount();
 
   return (
@@ -110,9 +131,21 @@ export default function Messages() {
 
         {selectedConversation ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 rounded-xl bg-card shadow-card overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-border flex items-center gap-3">
-              <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/10 text-primary">{selectedConversation.participant.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
-              <div><h4 className="font-semibold text-foreground">{selectedConversation.participant.name}</h4><p className="text-xs text-primary">{selectedConversation.participant.role}</p></div>
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary/10 text-primary">{selectedConversation.participant.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
+                <div><h4 className="font-semibold text-foreground">{selectedConversation.participant.name}</h4><p className="text-xs text-primary">{selectedConversation.participant.role}</p></div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setDeleteConvDialogOpen(true)} className="text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete Conversation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
@@ -121,13 +154,22 @@ export default function Messages() {
                 ) : selectedConversation.messages.map((message) => {
                   const isMe = message.senderId === "me";
                   return (
-                    <div key={message.id} className={cn("flex", isMe ? "justify-end" : "justify-start")}>
-                      <div className={cn("max-w-[70%] rounded-2xl px-4 py-2", isMe ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md")}>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                        <div className={cn("flex items-center justify-end gap-1 mt-1", isMe ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                          <span className="text-xs">{message.timestamp}</span>
-                          {isMe && (message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                    <div key={message.id} className={cn("flex group", isMe ? "justify-end" : "justify-start")}>
+                      <div className="relative">
+                        <div className={cn("max-w-[70%] rounded-2xl px-4 py-2", isMe ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md")}>
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <div className={cn("flex items-center justify-end gap-1 mt-1", isMe ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                            <span className="text-xs">{message.timestamp}</span>
+                            {isMe && (message.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                          </div>
                         </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteMessage(message.id); }}
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground items-center justify-center hidden group-hover:flex shadow-sm hover:bg-destructive/90 transition-colors"
+                          title="Delete message"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -149,6 +191,7 @@ export default function Messages() {
         )}
       </div>
 
+      {/* New Chat Dialog */}
       <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>New Conversation</DialogTitle><DialogDescription>Select a team member to chat with</DialogDescription></DialogHeader>
@@ -164,6 +207,25 @@ export default function Messages() {
           <DialogFooter><Button variant="outline" onClick={() => setIsNewChatOpen(false)}>Cancel</Button><Button onClick={handleStartNewChat}>Start Chat</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Conversation Confirmation */}
+      <AlertDialog open={deleteConvDialogOpen} onOpenChange={setDeleteConvDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete entire conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all messages with {selectedConversation?.participant.name}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConversation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deletingConv}>
+              {deletingConv && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
