@@ -31,6 +31,7 @@ const navItems = [
   { icon: Users, label: "Employees", path: "/employees" },
   { icon: Sprout, label: "Farm Operations", path: "/farm-operations" },
   { icon: CircleDollarSign, label: "Finance", path: "/finance" },
+  { icon: Wheat, label: "Harvests", path: "/harvests" },
   { icon: Warehouse, label: "Inventory", path: "/inventory" },
   { icon: ClipboardList, label: "Tasks", path: "/tasks" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
