@@ -19,6 +19,7 @@ import {
   CloudSun,
   Droplets,
   Shield,
+  Wheat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const navItems = [
   { icon: Users, label: "Employees", path: "/employees" },
   { icon: Sprout, label: "Farm Operations", path: "/farm-operations" },
   { icon: CircleDollarSign, label: "Finance", path: "/finance" },
+  { icon: Wheat, label: "Harvests", path: "/harvests" },
   { icon: Warehouse, label: "Inventory", path: "/inventory" },
   { icon: ClipboardList, label: "Tasks", path: "/tasks" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
