@@ -453,7 +453,7 @@ export default function FarmOperations() {
 
       {/* ── Add/Edit Dialog ── */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{editingItem ? "Edit" : "Add"} {activeCat.label}</DialogTitle>
             <DialogDescription>{editingItem ? "Update the details" : `Add a new ${activeCat.label.toLowerCase()} record`}</DialogDescription>
