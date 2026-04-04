@@ -102,6 +102,8 @@ interface AppDataContextType {
   sendMessage: (recipientId: string, content: string, farmId?: string) => Promise<void>;
   markConversationAsRead: (recipientId: string) => Promise<void>;
   getTotalUnreadCount: () => number;
+  deleteMessage: (messageId: string) => Promise<void>;
+  deleteConversation: (partnerId: string) => Promise<void>;
   refetchMessages: () => Promise<void>;
 
   // Activities (derived from recent actions)
