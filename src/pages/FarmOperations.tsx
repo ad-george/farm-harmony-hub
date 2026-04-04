@@ -460,7 +460,7 @@ export default function FarmOperations() {
           </DialogHeader>
 
           {activeCat.dataSource === "crops" ? (
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-3 py-2 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Name *</Label><Input value={cropForm.name} onChange={e => setCropForm({ ...cropForm, name: e.target.value })} placeholder="e.g., Maize" /></div>
                 <div className="space-y-2"><Label>Variety</Label><Input value={cropForm.variety} onChange={e => setCropForm({ ...cropForm, variety: e.target.value })} /></div>
