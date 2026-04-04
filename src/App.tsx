@@ -21,6 +21,7 @@ import Weather from "./pages/Weather";
 import Irrigation from "./pages/Irrigation";
 import AnomalyDetection from "./pages/AnomalyDetection";
 import Messages from "./pages/Messages";
+import Harvests from "./pages/Harvests";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
