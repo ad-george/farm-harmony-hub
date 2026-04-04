@@ -191,6 +191,62 @@ export type Database = {
           },
         ]
       }
+      harvests: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          farm_id: string
+          harvest_date: string
+          id: string
+          item_name: string
+          notes: string | null
+          quality_grade: string | null
+          quantity: number
+          revenue: number | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          farm_id: string
+          harvest_date?: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          quality_grade?: string | null
+          quantity?: number
+          revenue?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          farm_id?: string
+          harvest_date?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          quality_grade?: string | null
+          quantity?: number
+          revenue?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "harvests_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory: {
         Row: {
           category: string
