@@ -563,6 +563,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         sendMessage,
         markConversationAsRead,
         getTotalUnreadCount,
+        deleteMessage,
+        deleteConversation,
         refetchMessages,
         activities,
         getStats,
