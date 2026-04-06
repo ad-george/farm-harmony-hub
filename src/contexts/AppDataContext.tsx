@@ -16,8 +16,8 @@ export interface Farm {
   status: "active" | "maintenance" | "idle";
   description?: string;
   soilPh?: number | null;
-  soilType?: string | null;
-  irrigationType?: string | null;
+  soilStructure?: string | null;
+  soilTexture?: string | null;
 }
 
 export interface Task {
