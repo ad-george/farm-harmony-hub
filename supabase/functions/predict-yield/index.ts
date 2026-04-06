@@ -78,16 +78,20 @@ Generate numbers in tons for consistency. The monthly/quarterly trend numbers sh
 
     const userPrompt = `Analyze this farm system data and predict the next season's production yield:
 
-FARMS:
+FARMS (with soil conditions & irrigation):
 ${JSON.stringify(farms, null, 2)}
 
 CURRENT CROPS:
 ${JSON.stringify(crops, null, 2)}
 
-HISTORICAL PRODUCTION DATA:
+HISTORICAL HARVEST RECORDS (previous yields & revenue):
 ${JSON.stringify(historicalData, null, 2)}
 
-Generate detailed, realistic predictions for each farm and an overall prediction. Consider the farm types, sizes, locations, current crop stages, and seasonal patterns in East Africa.`;
+Generate detailed, realistic predictions for each farm and an overall prediction. Pay special attention to:
+1. Soil pH and soil type — flag any that are suboptimal for their crop types
+2. Irrigation method — factor in water efficiency and drought risk
+3. Historical harvest data — use actual recorded quantities as baselines for trend analysis
+4. Farm types, sizes, locations, current crop stages, and seasonal patterns in East Africa.`;
 
     console.log("Calling Lovable AI Gateway...");
 
