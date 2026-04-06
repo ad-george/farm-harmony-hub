@@ -177,8 +177,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             status: (f.status?.toLowerCase() || "active") as "active" | "maintenance" | "idle",
             description: f.description || "",
             soilPh: f.soil_ph ?? null,
-            soilType: f.soil_type ?? null,
-            irrigationType: f.irrigation_type ?? null,
+            soilStructure: f.soil_structure ?? null,
+            soilTexture: f.soil_texture ?? null,
           }))
         );
       }
@@ -201,8 +201,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       description: farm.description || "",
       created_by: user.id,
       soil_ph: farm.soilPh ?? null,
-      soil_type: farm.soilType ?? null,
-      irrigation_type: farm.irrigationType ?? null,
+      soil_structure: farm.soilStructure ?? null,
+      soil_texture: farm.soilTexture ?? null,
     } as any);
     if (error) throw error;
     await refetchFarms();
@@ -221,8 +221,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
     if (farm.description !== undefined) updateData.description = farm.description;
     if (farm.soilPh !== undefined) updateData.soil_ph = farm.soilPh;
-    if (farm.soilType !== undefined) updateData.soil_type = farm.soilType;
-    if (farm.irrigationType !== undefined) updateData.irrigation_type = farm.irrigationType;
+    if (farm.soilStructure !== undefined) updateData.soil_structure = farm.soilStructure;
+    if (farm.soilTexture !== undefined) updateData.soil_texture = farm.soilTexture;
 
     const { error } = await supabase.from("farms").update(updateData).eq("id", id);
     if (error) throw error;

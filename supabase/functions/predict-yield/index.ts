@@ -69,8 +69,8 @@ Given the farm and crop data, generate predictions in this exact JSON structure:
 
 Use realistic agricultural data. CRITICAL factors to consider:
 - Soil pH: affects nutrient availability. Optimal range varies by crop (most crops prefer 6.0-7.0). Flag farms with extreme pH.
-- Soil Type: loamy soils are ideal for most crops, clay retains water, sandy drains fast. Affects yield significantly.
-- Irrigation Type: drip is most efficient, rainfed is weather-dependent and riskier, flood can cause waterlogging.
+- Soil Structure & Aggregation: granular structure is ideal for root growth and water infiltration; blocky/platy/massive structures can impede drainage and root penetration. Affects yield significantly.
+- Soil Texture: sandy soils drain fast but lack nutrients, clay retains water but can waterlog, loamy is ideal for most crops. Texture determines water-holding capacity and nutrient availability.
 - Historical Harvest Data: use past yields, quantities, quality grades, and revenue to establish baselines and trends. If harvest history is available, base predictions on actual recorded data rather than estimates.
 - Farm size, type, location, crop stages, and seasonal patterns in East Africa.
 
