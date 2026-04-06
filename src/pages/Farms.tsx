@@ -64,8 +64,8 @@ export default function Farms() {
     farmType: "" as FarmType | "",
     isActive: true,
     soilPh: "",
-    soilType: "",
-    irrigationType: "",
+    soilStructure: "",
+    soilTexture: "",
   });
 
   const filteredFarms = farms.filter(
@@ -79,7 +79,7 @@ export default function Farms() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true, soilPh: "", soilType: "", irrigationType: "" });
+    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true, soilPh: "", soilStructure: "", soilTexture: "" });
     setEditingFarm(null);
   };
 
@@ -93,8 +93,8 @@ export default function Farms() {
       farmType: farm.farmType,
       isActive: farm.status === "active",
       soilPh: farm.soilPh?.toString() || "",
-      soilType: farm.soilType || "",
-      irrigationType: farm.irrigationType || "",
+      soilStructure: farm.soilStructure || "",
+      soilTexture: farm.soilTexture || "",
     });
     setIsDialogOpen(true);
   };
@@ -115,8 +115,8 @@ export default function Farms() {
           farmType: formData.farmType as FarmType,
           status: formData.isActive ? "active" : "idle",
           soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
-          soilType: formData.soilType || null,
-          irrigationType: formData.irrigationType || null,
+          soilStructure: formData.soilStructure || null,
+          soilTexture: formData.soilTexture || null,
         });
         toast.success("Farm updated successfully!");
       } else {
@@ -129,8 +129,8 @@ export default function Farms() {
           status: formData.isActive ? "active" : "idle",
           type: formData.farmType as string,
           soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
-          soilType: formData.soilType || null,
-          irrigationType: formData.irrigationType || null,
+          soilStructure: formData.soilStructure || null,
+          soilTexture: formData.soilTexture || null,
         });
         toast.success("Farm added successfully!");
       }
@@ -231,33 +231,35 @@ export default function Farms() {
                       <Input id="soilPh" type="number" step="0.1" min="0" max="14" placeholder="e.g. 6.5" value={formData.soilPh} onChange={(e) => handleInputChange("soilPh", e.target.value)} />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="soilType">Soil Type</Label>
-                      <Select value={formData.soilType} onValueChange={(value) => handleInputChange("soilType", value)}>
-                        <SelectTrigger><SelectValue placeholder="Select soil" /></SelectTrigger>
+                      <Label htmlFor="soilStructure">Soil Structure & Aggregation</Label>
+                      <Select value={formData.soilStructure} onValueChange={(value) => handleInputChange("soilStructure", value)}>
+                        <SelectTrigger><SelectValue placeholder="Select structure" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Loamy">Loamy</SelectItem>
-                          <SelectItem value="Clay">Clay</SelectItem>
-                          <SelectItem value="Sandy">Sandy</SelectItem>
-                          <SelectItem value="Silt">Silt</SelectItem>
-                          <SelectItem value="Peaty">Peaty</SelectItem>
-                          <SelectItem value="Chalky">Chalky</SelectItem>
-                          <SelectItem value="Sandy Loam">Sandy Loam</SelectItem>
-                          <SelectItem value="Clay Loam">Clay Loam</SelectItem>
+                          <SelectItem value="Granular">Granular</SelectItem>
+                          <SelectItem value="Blocky">Blocky</SelectItem>
+                          <SelectItem value="Platy">Platy</SelectItem>
+                          <SelectItem value="Prismatic">Prismatic</SelectItem>
+                          <SelectItem value="Columnar">Columnar</SelectItem>
+                          <SelectItem value="Single Grain">Single Grain</SelectItem>
+                          <SelectItem value="Massive">Massive</SelectItem>
+                          <SelectItem value="Crumb">Crumb</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="grid gap-2 mt-3">
-                    <Label htmlFor="irrigationType">Irrigation Type</Label>
-                    <Select value={formData.irrigationType} onValueChange={(value) => handleInputChange("irrigationType", value)}>
-                      <SelectTrigger><SelectValue placeholder="Select irrigation" /></SelectTrigger>
+                    <Label htmlFor="soilTexture">Soil Texture</Label>
+                    <Select value={formData.soilTexture} onValueChange={(value) => handleInputChange("soilTexture", value)}>
+                      <SelectTrigger><SelectValue placeholder="Select texture" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Drip">Drip Irrigation</SelectItem>
-                        <SelectItem value="Sprinkler">Sprinkler</SelectItem>
-                        <SelectItem value="Flood">Flood / Surface</SelectItem>
-                        <SelectItem value="Center Pivot">Center Pivot</SelectItem>
-                        <SelectItem value="Rainfed">Rainfed (No Irrigation)</SelectItem>
-                        <SelectItem value="Manual">Manual / Bucket</SelectItem>
+                        <SelectItem value="Sandy">Sandy</SelectItem>
+                        <SelectItem value="Loamy">Loamy</SelectItem>
+                        <SelectItem value="Clay">Clay</SelectItem>
+                        <SelectItem value="Silt">Silt</SelectItem>
+                        <SelectItem value="Sandy Loam">Sandy Loam</SelectItem>
+                        <SelectItem value="Clay Loam">Clay Loam</SelectItem>
+                        <SelectItem value="Silty Clay">Silty Clay</SelectItem>
+                        <SelectItem value="Peaty">Peaty</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

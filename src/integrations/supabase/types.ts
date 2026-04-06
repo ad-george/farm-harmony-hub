@@ -109,12 +109,12 @@ export type Database = {
           description: string | null
           employees: number
           id: string
-          irrigation_type: string | null
           location: string | null
           name: string
           size: string | null
           soil_ph: number | null
-          soil_type: string | null
+          soil_structure: string | null
+          soil_texture: string | null
           status: string
           type: string
           updated_at: string
@@ -125,12 +125,12 @@ export type Database = {
           description?: string | null
           employees?: number
           id?: string
-          irrigation_type?: string | null
           location?: string | null
           name: string
           size?: string | null
           soil_ph?: number | null
-          soil_type?: string | null
+          soil_structure?: string | null
+          soil_texture?: string | null
           status?: string
           type?: string
           updated_at?: string
@@ -141,12 +141,12 @@ export type Database = {
           description?: string | null
           employees?: number
           id?: string
-          irrigation_type?: string | null
           location?: string | null
           name?: string
           size?: string | null
           soil_ph?: number | null
-          soil_type?: string | null
+          soil_structure?: string | null
+          soil_texture?: string | null
           status?: string
           type?: string
           updated_at?: string
