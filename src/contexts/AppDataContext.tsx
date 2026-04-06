@@ -15,6 +15,9 @@ export interface Farm {
   farmType: FarmType;
   status: "active" | "maintenance" | "idle";
   description?: string;
+  soilPh?: number | null;
+  soilType?: string | null;
+  irrigationType?: string | null;
 }
 
 export interface Task {
@@ -163,7 +166,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       if (data) {
         setFarms(
-          data.map((f) => ({
+          data.map((f: any) => ({
             id: f.id,
             name: f.name,
             location: f.location || "",
@@ -173,6 +176,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
             farmType: (f.type?.toLowerCase() || "mixed") as FarmType,
             status: (f.status?.toLowerCase() || "active") as "active" | "maintenance" | "idle",
             description: f.description || "",
+            soilPh: f.soil_ph ?? null,
+            soilType: f.soil_type ?? null,
+            irrigationType: f.irrigation_type ?? null,
           }))
         );
       }
@@ -194,7 +200,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       employees: farm.employees,
       description: farm.description || "",
       created_by: user.id,
-    });
+      soil_ph: farm.soilPh ?? null,
+      soil_type: farm.soilType ?? null,
+      irrigation_type: farm.irrigationType ?? null,
+    } as any);
     if (error) throw error;
     await refetchFarms();
   };
@@ -211,6 +220,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateData.status = farm.status === "active" ? "Active" : farm.status === "maintenance" ? "Maintenance" : "Idle";
     }
     if (farm.description !== undefined) updateData.description = farm.description;
+    if (farm.soilPh !== undefined) updateData.soil_ph = farm.soilPh;
+    if (farm.soilType !== undefined) updateData.soil_type = farm.soilType;
+    if (farm.irrigationType !== undefined) updateData.irrigation_type = farm.irrigationType;
 
     const { error } = await supabase.from("farms").update(updateData).eq("id", id);
     if (error) throw error;
