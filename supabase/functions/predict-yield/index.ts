@@ -20,7 +20,7 @@ serve(async (req) => {
 
     console.log("Received prediction request for farms:", farms?.length, "crops:", crops?.length);
 
-    const systemPrompt = `You are an agricultural production analyst AI. You analyze farm data, crop records, and historical production data to generate realistic yield predictions.
+    const systemPrompt = `You are an agricultural production analyst AI. You analyze farm data, soil conditions, crop records, and historical harvest data to generate realistic yield predictions.
 
 IMPORTANT: You MUST respond ONLY with valid JSON. No markdown, no explanations, no code blocks. Just raw JSON.
 
@@ -67,7 +67,14 @@ Given the farm and crop data, generate predictions in this exact JSON structure:
   }
 }
 
-Use realistic agricultural data. Consider farm size, type, soil, location, crop stages, and seasonal patterns. Generate numbers in tons for consistency. The monthly/quarterly trend numbers should be in tons and represent production volume.`;
+Use realistic agricultural data. CRITICAL factors to consider:
+- Soil pH: affects nutrient availability. Optimal range varies by crop (most crops prefer 6.0-7.0). Flag farms with extreme pH.
+- Soil Type: loamy soils are ideal for most crops, clay retains water, sandy drains fast. Affects yield significantly.
+- Irrigation Type: drip is most efficient, rainfed is weather-dependent and riskier, flood can cause waterlogging.
+- Historical Harvest Data: use past yields, quantities, quality grades, and revenue to establish baselines and trends. If harvest history is available, base predictions on actual recorded data rather than estimates.
+- Farm size, type, location, crop stages, and seasonal patterns in East Africa.
+
+Generate numbers in tons for consistency. The monthly/quarterly trend numbers should be in tons and represent production volume.`;
 
     const userPrompt = `Analyze this farm system data and predict the next season's production yield:
 
