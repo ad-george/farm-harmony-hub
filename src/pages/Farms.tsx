@@ -63,6 +63,9 @@ export default function Farms() {
     employees: "",
     farmType: "" as FarmType | "",
     isActive: true,
+    soilPh: "",
+    soilType: "",
+    irrigationType: "",
   });
 
   const filteredFarms = farms.filter(
@@ -76,7 +79,7 @@ export default function Farms() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true });
+    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true, soilPh: "", soilType: "", irrigationType: "" });
     setEditingFarm(null);
   };
 
@@ -89,6 +92,9 @@ export default function Farms() {
       employees: farm.employees.toString(),
       farmType: farm.farmType,
       isActive: farm.status === "active",
+      soilPh: farm.soilPh?.toString() || "",
+      soilType: farm.soilType || "",
+      irrigationType: farm.irrigationType || "",
     });
     setIsDialogOpen(true);
   };
@@ -108,6 +114,9 @@ export default function Farms() {
           employees: parseInt(formData.employees) || 0,
           farmType: formData.farmType as FarmType,
           status: formData.isActive ? "active" : "idle",
+          soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
+          soilType: formData.soilType || null,
+          irrigationType: formData.irrigationType || null,
         });
         toast.success("Farm updated successfully!");
       } else {
@@ -119,6 +128,9 @@ export default function Farms() {
           farmType: formData.farmType as FarmType,
           status: formData.isActive ? "active" : "idle",
           type: formData.farmType as string,
+          soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
+          soilType: formData.soilType || null,
+          irrigationType: formData.irrigationType || null,
         });
         toast.success("Farm added successfully!");
       }
