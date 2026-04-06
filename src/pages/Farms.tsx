@@ -63,6 +63,9 @@ export default function Farms() {
     employees: "",
     farmType: "" as FarmType | "",
     isActive: true,
+    soilPh: "",
+    soilType: "",
+    irrigationType: "",
   });
 
   const filteredFarms = farms.filter(
@@ -76,7 +79,7 @@ export default function Farms() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true });
+    setFormData({ name: "", location: "", size: "", employees: "", farmType: "", isActive: true, soilPh: "", soilType: "", irrigationType: "" });
     setEditingFarm(null);
   };
 
@@ -89,6 +92,9 @@ export default function Farms() {
       employees: farm.employees.toString(),
       farmType: farm.farmType,
       isActive: farm.status === "active",
+      soilPh: farm.soilPh?.toString() || "",
+      soilType: farm.soilType || "",
+      irrigationType: farm.irrigationType || "",
     });
     setIsDialogOpen(true);
   };
@@ -108,6 +114,9 @@ export default function Farms() {
           employees: parseInt(formData.employees) || 0,
           farmType: formData.farmType as FarmType,
           status: formData.isActive ? "active" : "idle",
+          soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
+          soilType: formData.soilType || null,
+          irrigationType: formData.irrigationType || null,
         });
         toast.success("Farm updated successfully!");
       } else {
@@ -119,6 +128,9 @@ export default function Farms() {
           farmType: formData.farmType as FarmType,
           status: formData.isActive ? "active" : "idle",
           type: formData.farmType as string,
+          soilPh: formData.soilPh ? parseFloat(formData.soilPh) : null,
+          soilType: formData.soilType || null,
+          irrigationType: formData.irrigationType || null,
         });
         toast.success("Farm added successfully!");
       }
@@ -169,14 +181,14 @@ export default function Farms() {
                 <Plus className="h-4 w-4 mr-2" /> Add Farm
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[80vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>{editingFarm ? "Edit Farm" : "Add New Farm"}</DialogTitle>
                 <DialogDescription>
                   {editingFarm ? "Update the farm details below." : "Enter the details for your new farm."}
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-3 py-4 overflow-y-auto pr-1">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Farm Name</Label>
                   <Input id="name" placeholder="Enter farm name" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
@@ -209,6 +221,48 @@ export default function Farms() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Soil & Farm Conditions */}
+                <div className="border-t border-border pt-3 mt-1">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">Farm Conditions (for yield prediction)</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="soilPh">Soil pH</Label>
+                      <Input id="soilPh" type="number" step="0.1" min="0" max="14" placeholder="e.g. 6.5" value={formData.soilPh} onChange={(e) => handleInputChange("soilPh", e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="soilType">Soil Type</Label>
+                      <Select value={formData.soilType} onValueChange={(value) => handleInputChange("soilType", value)}>
+                        <SelectTrigger><SelectValue placeholder="Select soil" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Loamy">Loamy</SelectItem>
+                          <SelectItem value="Clay">Clay</SelectItem>
+                          <SelectItem value="Sandy">Sandy</SelectItem>
+                          <SelectItem value="Silt">Silt</SelectItem>
+                          <SelectItem value="Peaty">Peaty</SelectItem>
+                          <SelectItem value="Chalky">Chalky</SelectItem>
+                          <SelectItem value="Sandy Loam">Sandy Loam</SelectItem>
+                          <SelectItem value="Clay Loam">Clay Loam</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 mt-3">
+                    <Label htmlFor="irrigationType">Irrigation Type</Label>
+                    <Select value={formData.irrigationType} onValueChange={(value) => handleInputChange("irrigationType", value)}>
+                      <SelectTrigger><SelectValue placeholder="Select irrigation" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Drip">Drip Irrigation</SelectItem>
+                        <SelectItem value="Sprinkler">Sprinkler</SelectItem>
+                        <SelectItem value="Flood">Flood / Surface</SelectItem>
+                        <SelectItem value="Center Pivot">Center Pivot</SelectItem>
+                        <SelectItem value="Rainfed">Rainfed (No Irrigation)</SelectItem>
+                        <SelectItem value="Manual">Manual / Bucket</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="isActive">Farm Status (Active)</Label>
                   <Switch id="isActive" checked={formData.isActive} onCheckedChange={(checked) => handleInputChange("isActive", checked)} />

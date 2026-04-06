@@ -92,19 +92,39 @@ export default function Predictions() {
       }));
       setCrops(realCrops);
 
+      // Fetch harvest history for AI context
+      const { data: harvestsData } = await supabase
+        .from("harvests")
+        .select("*, farms(name)")
+        .order("harvest_date", { ascending: false })
+        .limit(100);
+
+      const harvestHistory = (harvestsData || []).map((h: any) => ({
+        farm: h.farms?.name || "Unknown",
+        category: h.category,
+        item: h.item_name,
+        quantity: h.quantity,
+        unit: h.unit,
+        qualityGrade: h.quality_grade,
+        harvestDate: h.harvest_date,
+        revenue: h.revenue,
+      }));
+
       const { data, error } = await supabase.functions.invoke("predict-yield", {
         body: {
           farms: farms.map((f) => ({
             name: f.name,
             location: f.location,
             size: f.size,
-            soilType: f.type || f.farmType,
             farmType: f.farmType,
             status: f.status,
             employees: f.employees,
+            soilPh: f.soilPh,
+            soilType: f.soilType,
+            irrigationType: f.irrigationType,
           })),
           crops: realCrops,
-          historicalData: [],
+          historicalData: harvestHistory,
         },
       });
 
