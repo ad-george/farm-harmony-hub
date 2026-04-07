@@ -195,6 +195,9 @@ export default function Predictions() {
                 ? 'Click "Generate Predictions" to analyze your farm data with AI'
                 : "You need to create farms and add crops before predictions can be generated"}
             </p>
+            {cacheAge && predictions && (
+              <p className="text-xs text-muted-foreground mt-1">Last updated: {cacheAge} • Cached for 24hrs</p>
+            )}
           </div>
         </div>
         <Button
