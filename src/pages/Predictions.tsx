@@ -63,14 +63,44 @@ interface PredictionData {
 }
 
 
+const CACHE_KEY = "predictions_cache";
+const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp < CACHE_DURATION) return cached.data;
+    localStorage.removeItem(CACHE_KEY);
+  } catch { /* ignore */ }
+  return null;
+}
+
+function saveCache(data: any) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
+
 export default function Predictions() {
   const { farms } = useAppData();
   const [predictions, setPredictions] = useState<PredictionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedFarm, setExpandedFarm] = useState<string | null>(null);
   const [crops, setCrops] = useState<any[]>([]);
+  const [cacheAge, setCacheAge] = useState<string | null>(null);
 
   const hasData = farms.length > 0;
+
+  // Load cached data on mount
+  useEffect(() => {
+    const cached = loadCache();
+    if (cached) {
+      setPredictions(cached);
+      const raw = JSON.parse(localStorage.getItem(CACHE_KEY)!);
+      const mins = Math.round((Date.now() - raw.timestamp) / 60000);
+      setCacheAge(mins < 60 ? `${mins}m ago` : `${Math.round(mins / 60)}h ago`);
+    }
+  }, []);
 
   const generatePredictions = async () => {
     setIsLoading(true);
@@ -132,6 +162,8 @@ export default function Predictions() {
       if (data.error) throw new Error(data.error);
 
       setPredictions(data);
+      saveCache(data);
+      setCacheAge("just now");
       toast.success("Predictions generated successfully!");
     } catch (err: any) {
       console.error("Prediction error:", err);
