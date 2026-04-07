@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAppData } from "@/contexts/AppDataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +7,28 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { AlertTriangle, RefreshCw, Shield, TrendingUp, TrendingDown, Activity, Search, CheckCircle2, XCircle, AlertCircle, Zap } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, RadialBarChart, RadialBar, AreaChart, Area } from "recharts";
+
+const CACHE_KEY = "anomaly_cache";
+const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp < CACHE_DURATION) return cached.data;
+    localStorage.removeItem(CACHE_KEY);
+  } catch { /* ignore */ }
+  return null;
+}
+
+function saveCache(data: any) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
 
 const severityConfig: Record<string, { color: string; icon: typeof AlertTriangle; bg: string }> = {
   critical: { color: "text-destructive", icon: XCircle, bg: "bg-destructive/10 border-destructive/20" },
@@ -40,17 +59,77 @@ export default function AnomalyDetection() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [filterSeverity, setFilterSeverity] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [cacheAge, setCacheAge] = useState<string | null>(null);
 
   const hasData = farms.length > 0;
 
-  const runDetection = async () => {
+  // Load cached data on mount
+  useEffect(() => {
+    const cached = loadCache();
+    if (cached) {
+      setAnomalies(cached.anomalies);
+      setRiskScore(cached.riskScore);
+      setTrendAnalysis(cached.trendAnalysis);
+      setSummary(cached.summary);
+      const raw = JSON.parse(localStorage.getItem(CACHE_KEY)!);
+      const mins = Math.round((Date.now() - raw.timestamp) / 60000);
+      setCacheAge(mins < 60 ? `${mins}m ago` : `${Math.round(mins / 60)}h ago`);
+    }
+  }, []);
+
+  const runDetection = async (forceRefresh = false) => {
     if (!hasData) return;
+    
+    if (!forceRefresh) {
+      const cached = loadCache();
+      if (cached) {
+        setAnomalies(cached.anomalies);
+        setRiskScore(cached.riskScore);
+        setTrendAnalysis(cached.trendAnalysis);
+        setSummary(cached.summary);
+        toast({ title: "Loaded from cache", description: "Showing cached results. Click refresh for fresh scan." });
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
+      // Fetch all relevant data for more accurate anomaly detection
+      const [harvestsRes, financeRes, cropsRes, livestockRes, inventoryRes] = await Promise.all([
+        supabase.from("harvests").select("*, farms(name)").order("harvest_date", { ascending: false }).limit(200),
+        supabase.from("finance_records").select("*, farms(name)").order("date", { ascending: false }).limit(200),
+        supabase.from("crops").select("*, farms(name)"),
+        supabase.from("livestock").select("*, farms(name)"),
+        supabase.from("inventory").select("*, farms(name)"),
+      ]);
+
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/anomaly-detection`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ farms, tasks, activities }),
+        body: JSON.stringify({
+          farms: farms.map(f => ({ name: f.name, location: f.location, size: f.size, farmType: f.farmType, status: f.status, employees: f.employees })),
+          tasks,
+          activities,
+          harvests: (harvestsRes.data || []).map((h: any) => ({
+            farm: h.farms?.name, item: h.item_name, quantity: h.quantity, unit: h.unit,
+            quality: h.quality_grade, date: h.harvest_date, revenue: h.revenue, category: h.category,
+          })),
+          financeRecords: (financeRes.data || []).map((f: any) => ({
+            farm: f.farms?.name, type: f.type, category: f.category, amount: f.amount,
+            date: f.date, description: f.description,
+          })),
+          crops: (cropsRes.data || []).map((c: any) => ({
+            farm: c.farms?.name, name: c.name, variety: c.variety, status: c.status,
+            area: c.area, plantedDate: c.planted_date, expectedHarvest: c.expected_harvest,
+          })),
+          livestock: (livestockRes.data || []).map((l: any) => ({
+            farm: l.farms?.name, type: l.type, breed: l.breed, count: l.count, healthStatus: l.health_status,
+          })),
+          inventory: (inventoryRes.data || []).map((inv: any) => ({
+            farm: inv.farms?.name, name: inv.name, category: inv.category, quantity: inv.quantity,
+            unit: inv.unit, minStock: inv.min_stock, status: inv.status,
+          })),
+        }),
       });
       if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || "Failed"); }
       const data = await resp.json();
@@ -58,6 +137,8 @@ export default function AnomalyDetection() {
       setRiskScore(data.riskScore);
       setTrendAnalysis(data.trendAnalysis);
       setSummary(data.summary);
+      saveCache(data);
+      setCacheAge("just now");
       toast({ title: "Anomaly Detection Complete", description: `Found ${data.summary.totalAnomalies} anomalies across your farm system.` });
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed", variant: "destructive" });
@@ -74,10 +155,13 @@ export default function AnomalyDetection() {
   return (
     <DashboardLayout title="Anomaly Detection" subtitle="AI-powered statistical analysis to detect unusual patterns in production, finance & operations.">
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button onClick={runDetection} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
+        <Button onClick={() => runDetection(true)} disabled={loading || !hasData} className="bg-primary text-primary-foreground">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Scanning..." : anomalies ? "Re-scan System" : "Run Anomaly Detection"}
         </Button>
+        {cacheAge && anomalies && (
+          <span className="text-xs text-muted-foreground">Last updated: {cacheAge} • Cached for 24hrs</span>
+        )}
         {anomalies && (
           <>
             <Select value={filterSeverity} onValueChange={setFilterSeverity}>
