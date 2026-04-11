@@ -50,7 +50,7 @@ const farmTypeLabels: Record<FarmType, string> = {
 
 export default function Farms() {
   const { farms, farmsLoading, addFarm, updateFarm, deleteFarm } = useAppData();
-  const { isOwner, isManager, canEditFarm, canDeleteFarm, canCreate } = useUserRole();
+  const { isOwner, isManager, canEditFarm, canDeleteFarm, canCreateFarm } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFarm, setEditingFarm] = useState<Farm | null>(null);
@@ -174,7 +174,7 @@ export default function Farms() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search farms..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
         </div>
-        {canCreate && (
+        {canCreateFarm && (
           <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">
