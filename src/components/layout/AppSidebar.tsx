@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -24,17 +25,25 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/contexts/SidebarContext";
+import { useUserRole, AppRole } from "@/hooks/useUserRole";
 
-const navItems = [
+interface NavItem {
+  icon: any;
+  label: string;
+  path: string;
+  allowedRoles?: AppRole[];
+}
+
+const navItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: MapPin, label: "Farms", path: "/farms" },
-  { icon: Users, label: "Employees", path: "/employees" },
+  { icon: Users, label: "Employees", path: "/employees", allowedRoles: ["owner", "manager"] },
   { icon: Sprout, label: "Farm Operations", path: "/farm-operations" },
-  { icon: CircleDollarSign, label: "Finance", path: "/finance" },
+  { icon: CircleDollarSign, label: "Finance", path: "/finance", allowedRoles: ["owner", "manager"] },
   { icon: Wheat, label: "Harvests", path: "/harvests" },
   { icon: Warehouse, label: "Inventory", path: "/inventory" },
   { icon: ClipboardList, label: "Tasks", path: "/tasks" },
-  { icon: BarChart3, label: "Reports", path: "/reports" },
+  { icon: BarChart3, label: "Reports", path: "/reports", allowedRoles: ["owner", "manager"] },
   { icon: Brain, label: "Predictions", path: "/predictions" },
   { icon: CloudSun, label: "Weather", path: "/weather" },
   { icon: Droplets, label: "Irrigation", path: "/irrigation" },
@@ -42,12 +51,18 @@ const navItems = [
   { icon: Mail, label: "Messages", path: "/messages" },
 ];
 
-const bottomNavItems = [
+const bottomNavItems: NavItem[] = [
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 export function AppSidebar() {
   const { collapsed, toggle } = useSidebarState();
+  const location = useLocation();
+  const { role } = useUserRole();
+
+  const filteredNavItems = navItems.filter(
+    (item) => !item.allowedRoles || item.allowedRoles.includes(role)
+  );
 
   return (
     <motion.aside
@@ -89,7 +104,7 @@ export function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link

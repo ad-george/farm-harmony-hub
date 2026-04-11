@@ -25,6 +25,7 @@ import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 import { cn } from "@/lib/utils";
 
 // ── Category definitions ──
@@ -67,6 +68,7 @@ const speciesEmojis: Record<string, string> = {
 export default function FarmOperations() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate, isEmployee } = useUserRole();
 
   // Data
@@ -175,7 +177,7 @@ export default function FarmOperations() {
         await supabase.from("crops").update(payload).eq("id", editingItem.id);
         toast.success("Crop updated");
       } else {
-        await supabase.from("crops").insert({ ...payload, created_by: user?.id });
+        await supabase.from("crops").insert({ ...payload, created_by: user?.id, organization_id: orgId });
         toast.success("Crop added");
       }
       setIsAddDialogOpen(false);
@@ -198,7 +200,7 @@ export default function FarmOperations() {
         await supabase.from("livestock").update(payload).eq("id", editingItem.id);
         toast.success("Record updated");
       } else {
-        await supabase.from("livestock").insert({ ...payload, created_by: user?.id });
+        await supabase.from("livestock").insert({ ...payload, created_by: user?.id, organization_id: orgId });
         toast.success("Record added");
       }
       setIsAddDialogOpen(false);

@@ -25,16 +25,17 @@ import { useAppData, Employee } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 
-const roleConfig = {
+const roleConfig: Record<string, { label: string; className: string }> = {
   owner: { label: "Owner", className: "bg-primary/10 text-primary" },
   manager: { label: "Manager", className: "bg-accent/20 text-accent-foreground" },
+  senior_employee: { label: "Senior Employee", className: "bg-warning/10 text-warning" },
   employee: { label: "Employee", className: "bg-info/10 text-info" },
 };
 
 export default function Employees() {
   const navigate = useNavigate();
   const { employees, farms, employeesLoading, refetchEmployees } = useAppData();
-  const { isOwner, isManager, canManageRoles } = useUserRole();
+  const { isOwner, isManager, canManageRoles, canManageEmployees } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -122,7 +123,7 @@ export default function Employees() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search employees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
         </div>
-        {(isOwner || isManager) && (
+        {canManageEmployees && (
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
             Add Employee
@@ -134,7 +135,7 @@ export default function Employees() {
         <div className="text-center py-20 text-muted-foreground">
           <UserPlus className="h-12 w-12 mx-auto mb-4 opacity-40" />
           <p className="mb-2">No team members yet.</p>
-          {(isOwner || isManager) && (
+          {canManageEmployees && (
             <Button variant="outline" onClick={() => setIsAddDialogOpen(true)} className="mt-2">
               <Plus className="h-4 w-4 mr-2" /> Add your first employee
             </Button>
@@ -155,7 +156,7 @@ export default function Employees() {
             </TableHeader>
             <TableBody>
               {filteredEmployees.map((employee) => {
-                const role = roleConfig[employee.role];
+                const role = roleConfig[employee.role] || roleConfig.employee;
                 const initials = employee.name.split(" ").map((n) => n[0]).join("");
                 return (
                   <TableRow key={employee.id} className="hover:bg-muted/30">
@@ -209,8 +210,8 @@ export default function Employees() {
               <Select value={roleForm.role} onValueChange={(v) => setRoleForm((p) => ({ ...p, role: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  {isOwner && <SelectItem value="manager">Manager</SelectItem>}
+                  {(isOwner || isManager) && <SelectItem value="senior_employee">Senior Employee</SelectItem>}
                   <SelectItem value="employee">Employee</SelectItem>
                 </SelectContent>
               </Select>
@@ -260,8 +261,11 @@ export default function Employees() {
                 <Select value={addForm.role} onValueChange={v => setAddForm({ ...addForm, role: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="employee">Employee</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
+                    {isOwner && <SelectItem value="manager">Manager</SelectItem>}
+                    {isManager && <>
+                      <SelectItem value="senior_employee">Senior Employee</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </>}
                   </SelectContent>
                 </Select>
               </div>

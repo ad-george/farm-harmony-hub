@@ -20,6 +20,7 @@ import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface LivestockGroup {
   id: string;
@@ -45,6 +46,7 @@ type HealthStatus = "healthy" | "attention" | "critical";
 export default function Livestock() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate, isEmployee } = useUserRole();
   const [livestock, setLivestock] = useState<LivestockGroup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +89,7 @@ export default function Livestock() {
         await supabase.from("livestock").insert({
           type: formData.type, breed: formData.breed, count: formData.count, farm_id: formData.farm_id,
           health_status: formData.healthStatus.charAt(0).toUpperCase() + formData.healthStatus.slice(1),
-          location: formData.location, created_by: user?.id,
+          location: formData.location, created_by: user?.id, organization_id: orgId,
         });
         toast.success("Livestock added");
       }

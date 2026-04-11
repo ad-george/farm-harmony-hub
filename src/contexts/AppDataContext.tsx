@@ -40,7 +40,7 @@ export interface Employee {
   name: string;
   email: string;
   phone: string;
-  role: "owner" | "manager" | "employee";
+  role: "owner" | "manager" | "senior_employee" | "employee";
   farm: string;
   status: "active" | "on-leave" | "inactive";
   avatar?: string;
@@ -132,6 +132,22 @@ const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
+  // Fetch user's organization_id
+  const [userOrgId, setUserOrgId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOrg = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) setUserOrgId(data.organization_id);
+    };
+    fetchOrg();
+  }, [user]);
+
   // Farms
   const [farms, setFarms] = useState<Farm[]>([]);
   const [farmsLoading, setFarmsLoading] = useState(true);
@@ -203,6 +219,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       soil_ph: farm.soilPh ?? null,
       soil_structure: farm.soilStructure ?? null,
       soil_texture: farm.soilTexture ?? null,
+      organization_id: userOrgId,
     } as any);
     if (error) throw error;
     await refetchFarms();
@@ -272,7 +289,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const addTask = async (task: any) => {
     if (!user) return;
-    // Find farm_id from farm name
     const farm = farms.find((f) => f.name === task.farm || f.id === task.farm_id);
     const { error } = await supabase.from("tasks").insert({
       title: task.title,
@@ -283,6 +299,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       due_date: task.dueDate && task.dueDate !== "No due date" ? task.dueDate : null,
       assigned_to: task.assigned_to || null,
       created_by: user.id,
+      organization_id: userOrgId,
     });
     if (error) throw error;
     await refetchTasks();
@@ -432,6 +449,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       recipient_id: recipientId,
       content,
       farm_id: farmId || null,
+      organization_id: userOrgId,
     });
     if (error) throw error;
     await refetchMessages();

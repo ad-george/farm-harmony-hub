@@ -33,6 +33,7 @@ import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface Crop {
   id: string;
@@ -60,6 +61,7 @@ type CropStage = "seedling" | "vegetative" | "flowering" | "harvest-ready";
 export default function Crops() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate, isEmployee } = useUserRole();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +110,7 @@ export default function Crops() {
           name: formData.name, variety: formData.variety, farm_id: formData.farm_id,
           planted_date: formData.plantedDate || null, expected_harvest: formData.expectedHarvest || null,
           status: formData.stage, area: formData.area, yield_estimate: parseFloat(formData.expectedYield) || null,
-          created_by: user?.id,
+          created_by: user?.id, organization_id: orgId,
         });
         toast.success("Crop added");
       }
