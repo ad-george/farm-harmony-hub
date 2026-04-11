@@ -40,7 +40,7 @@ export interface Employee {
   name: string;
   email: string;
   phone: string;
-  role: "owner" | "manager" | "employee";
+  role: "owner" | "manager" | "senior_employee" | "employee";
   farm: string;
   status: "active" | "on-leave" | "inactive";
   avatar?: string;
