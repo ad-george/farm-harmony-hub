@@ -449,6 +449,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       recipient_id: recipientId,
       content,
       farm_id: farmId || null,
+      organization_id: userOrgId,
     });
     if (error) throw error;
     await refetchMessages();
