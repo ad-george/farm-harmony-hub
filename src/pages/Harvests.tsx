@@ -141,6 +141,7 @@ export default function Harvests() {
       revenue: Number(formRevenue) || 0,
       notes: formNotes.trim() || null,
       created_by: user?.id || null,
+      organization_id: orgId,
     };
 
     if (editingHarvest) {
