@@ -17,6 +17,7 @@ import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface Transaction {
   id: string;
@@ -40,6 +41,7 @@ const expenseCategories = [
 export default function Finance() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate, isEmployee } = useUserRole();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +87,7 @@ export default function Finance() {
         await supabase.from("finance_records").insert({
           date: formData.date || new Date().toISOString().split("T")[0],
           description: formData.description, type: formData.type, amount: formData.amount,
-          farm_id: formData.farm_id || null, category: formData.category, created_by: user?.id,
+          farm_id: formData.farm_id || null, category: formData.category, created_by: user?.id, organization_id: orgId,
         });
         toast.success("Transaction added");
       }

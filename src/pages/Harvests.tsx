@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,7 @@ const GRADES = ["A", "B", "C", "Premium", "Standard"];
 export default function Harvests() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate } = useUserRole();
 
   const [harvests, setHarvests] = useState<Harvest[]>([]);

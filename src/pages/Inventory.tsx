@@ -15,6 +15,7 @@ import { useAppData } from "@/contexts/AppDataContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 
 type ItemCategory = "seeds" | "fertilizer" | "pesticide" | "machinery" | "feed" | "supplies";
@@ -42,6 +43,7 @@ const categoryConfig = {
 export default function Inventory() {
   const { farms } = useAppData();
   const { user } = useAuth();
+  const orgId = useOrganization();
   const { canCreate, isEmployee } = useUserRole();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ export default function Inventory() {
         await supabase.from("inventory").insert({
           name: formData.name, category: formData.category, quantity: parseFloat(formData.quantity),
           unit: formData.unit, min_stock: parseFloat(formData.minStock) || 0, farm_id: formData.farm_id || null,
-          created_by: user?.id,
+          created_by: user?.id, organization_id: orgId,
         });
         toast.success("Item added");
       }
