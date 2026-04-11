@@ -132,6 +132,22 @@ const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
+  // Fetch user's organization_id
+  const [userOrgId, setUserOrgId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOrg = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) setUserOrgId(data.organization_id);
+    };
+    fetchOrg();
+  }, [user]);
+
   // Farms
   const [farms, setFarms] = useState<Farm[]>([]);
   const [farmsLoading, setFarmsLoading] = useState(true);
