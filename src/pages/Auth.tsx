@@ -23,6 +23,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [orgName, setOrgName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   const { signIn, signUp, resetPassword, user, loading } = useAuth();
@@ -45,6 +46,7 @@ export default function Auth() {
     setEmail("");
     setPassword("");
     setFullName("");
+    setOrgName("");
   };
 
   const validateEmail = (email: string): boolean => {
@@ -112,7 +114,7 @@ export default function Auth() {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName, orgName);
     setIsLoading(false);
 
     if (error) {
@@ -277,6 +279,22 @@ export default function Auth() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp}>
                   <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-org">Organization / Farm Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-org"
+                          type="text"
+                          placeholder="e.g. Green Valley Farms"
+                          value={orgName}
+                          onChange={(e) => setOrgName(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">This creates your organization. You'll be the owner.</p>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-name">Full Name</Label>
                       <div className="relative">
