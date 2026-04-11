@@ -153,6 +153,8 @@ export function useUserRole(): UserRoleData {
     isManager,
     isSeniorEmployee,
     isEmployee,
+    isViewOnly,
+    canCreate,
     canCreateFarm,
     canManageEmployees,
     canEditFarm,
