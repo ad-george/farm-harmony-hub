@@ -210,8 +210,8 @@ export default function Employees() {
               <Select value={roleForm.role} onValueChange={(v) => setRoleForm((p) => ({ ...p, role: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  {isOwner && <SelectItem value="manager">Manager</SelectItem>}
+                  {(isOwner || isManager) && <SelectItem value="senior_employee">Senior Employee</SelectItem>}
                   <SelectItem value="employee">Employee</SelectItem>
                 </SelectContent>
               </Select>
