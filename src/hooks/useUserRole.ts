@@ -79,6 +79,8 @@ export function useUserRole(): UserRoleData {
   const isManager = role === "manager";
   const isSeniorEmployee = role === "senior_employee";
   const isEmployee = role === "employee";
+  const isViewOnly = isOwner; // owner is view-only on operations
+  const canCreate = isManager || isSeniorEmployee; // can create operational data
 
   // Only owner can create farms
   const canCreateFarm = isOwner;
