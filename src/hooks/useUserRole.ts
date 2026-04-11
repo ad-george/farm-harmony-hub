@@ -14,6 +14,8 @@ interface UserRoleData {
   isManager: boolean;
   isSeniorEmployee: boolean;
   isEmployee: boolean;
+  isViewOnly: boolean; // owner is view-only on operations
+  canCreate: boolean; // can create operational data (manager + senior_employee)
   canCreateFarm: boolean;
   canManageEmployees: boolean;
   canEditFarm: (farmId: string) => boolean;
