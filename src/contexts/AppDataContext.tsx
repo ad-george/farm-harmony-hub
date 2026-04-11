@@ -219,6 +219,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       soil_ph: farm.soilPh ?? null,
       soil_structure: farm.soilStructure ?? null,
       soil_texture: farm.soilTexture ?? null,
+      organization_id: userOrgId,
     } as any);
     if (error) throw error;
     await refetchFarms();
@@ -288,7 +289,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const addTask = async (task: any) => {
     if (!user) return;
-    // Find farm_id from farm name
     const farm = farms.find((f) => f.name === task.farm || f.id === task.farm_id);
     const { error } = await supabase.from("tasks").insert({
       title: task.title,
@@ -299,6 +299,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       due_date: task.dueDate && task.dueDate !== "No due date" ? task.dueDate : null,
       assigned_to: task.assigned_to || null,
       created_by: user.id,
+      organization_id: userOrgId,
     });
     if (error) throw error;
     await refetchTasks();
