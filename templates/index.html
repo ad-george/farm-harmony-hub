@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmPro - Modern Farm Management System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --dark-green: #1b5e20;
+            --light-green: #c8e6c9;
+            --accent-green: #4caf50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--dark-green);
+        }
+        
+        /* Navigation */
+        .navbar {
+            padding: 20px 0;
+            transition: all 0.3s;
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green) !important;
+        }
+        
+        .navbar-brand i {
+            color: var(--accent-green);
+            margin-right: 10px;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: #555 !important;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-green) !important;
+        }
+        
+        .btn-success {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--dark-green);
+            border-color: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46,125,50,0.3);
+        }
+        
+        .btn-outline-success {
+            color: var(--primary-green);
+            border-color: var(--primary-green);
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-success:hover {
+            background-color: var(--primary-green);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, 
+                rgba(46,125,50,0.95) 0%, 
+                rgba(27,94,32,0.9) 100%),
+                url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 150px 0 100px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 100px 0;
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            position: relative;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--primary-green);
+            border-radius: 2px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e9ecef;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--light-green), var(--accent-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--dark-green);
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: white;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--dark-green);
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .footer-links h5 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+        
+        .copyright {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .feature-card {
+                margin-bottom: 30px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tractor"></i> FarmPro
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-outline-success" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-success" href="/register">Get Started</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7 animate-fade-in">
+                    <h1 class="hero-title">Transform Your Farm Management</h1>
+                    <p class="hero-subtitle">
+                        Streamline your agricultural operations with our comprehensive farm management system. 
+                        Track crops, livestock, finances, and more in one integrated platform designed for modern farming.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/register" class="btn btn-success btn-lg">
+                            <i class="fas fa-rocket me-2"></i> Start Free Trial
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-play-circle me-2"></i> Explore Features
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="text-center">
+                        <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Farm Dashboard Preview" class="img-fluid rounded shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Complete Farm Management Solution</h2>
+            <p class="text-center text-muted mb-5">Everything you need to manage your farm efficiently and profitably</p>
+            
+            <div class="row g-4">
+                <!-- Feature 1 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <h3 class="feature-title">Crop Management</h3>
+                        <p>Track planting schedules, growth stages, irrigation, and harvest predictions with detailed analytics and alerts.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Growth tracking & monitoring</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Yield prediction analytics</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Disease & pest monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cow"></i>
+                        </div>
+                        <h3 class="feature-title">Livestock Tracking</h3>
+                        <p>Monitor animal health, breeding cycles, feeding schedules, and inventory management in real-time.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Health records & vaccination</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Breeding management</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Feed & nutrition tracking</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Financial Analytics</h3>
+                        <p>Track income, expenses, profitability, and generate comprehensive financial reports and insights.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Income & expense tracking</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Profit & loss analysis</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Budget planning & forecasting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4 mt-4">
+                <!-- Feature 4 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3 class="feature-title">Task Management</h3>
+                        <p>Assign, track, and manage farm tasks with automated reminders, progress tracking, and team collaboration.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Task scheduling & assignment</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Progress tracking</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Team collaboration tools</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <h3 class="feature-title">Inventory Control</h3>
+                        <p>Manage farm supplies, equipment, and products with automated stock alerts and consumption tracking.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Stock tracking & management</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Reorder point alerts</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Equipment maintenance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h3 class="feature-title">Dashboard & Reports</h3>
+                        <p>Real-time dashboards with customizable reports, visual analytics, and export capabilities.</p>
+                        <ul class="list-unstyled text-start mt-3">
+                            <li><i class="fas fa-check text-success me-2"></i> Real-time analytics</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Custom report generation</li>
+                            <li><i class="fas fa-check text-success me-2"></i> PDF/Excel export</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="stat-number">1,250+</div>
+                    <div class="stat-label">Farms Managed</div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-number">45,000+</div>
+                    <div class="stat-label">Acres Covered</div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Customer Satisfaction</div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support Available</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="about" class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Ready to Transform Your Farm Management?</h2>
+            <p class="cta-subtitle">
+                Join thousands of farmers who have increased productivity and profitability with our farm management system.
+                Start your 30-day free trial today.
+            </p>
+            <div class="mt-4">
+                <a href="/register" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-play-circle me-2"></i> Start Free Trial
+                </a>
+                <a href="/login" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i> Existing User Login
+                </a>
+            </div>
+            <p class="text-muted mt-3">No credit card required • Full access to all features • Cancel anytime</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <a href="/" class="footer-brand">
+                        <i class="fas fa-tractor me-2"></i> FarmPro
+                    </a>
+                    <p class="mt-3" style="opacity: 0.8;">
+                        Revolutionizing farm management through technology. Making agriculture more efficient, profitable, and sustainable.
+                    </p>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <div class="footer-links">
+                        <h5>Product</h5>
+                        <a href="#features">Features</a>
+                        <a href="#about">Pricing</a>
+                        <a href="#">Documentation</a>
+                        <a href="#">API</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <div class="footer-links">
+                        <h5>Company</h5>
+                        <a href="#about">About</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Blog</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-links">
+                        <h5>Contact Us</h5>
+                        <p style="opacity: 0.8;">
+                            <i class="fas fa-map-marker-alt me-2"></i> 123 Farm Street, Agriculture City
+                        </p>
+                        <p style="opacity: 0.8;">
+                            <i class="fas fa-phone me-2"></i> +1 (555) 123-4567
+                        </p>
+                        <p style="opacity: 0.8;">
+                            <i class="fas fa-envelope me-2"></i> info@farmpro.com
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2024 FarmPro Management System. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0">
+                            <a href="#" class="text-white-50 me-3">Privacy Policy</a>
+                            <a href="#" class="text-white-50">Terms of Service</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if(window.scrollY > 100) {
+                navbar.style.backgroundColor = 'rgba(255,255,255,0.98)';
+                navbar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            } else {
+                navbar.style.backgroundColor = 'white';
+                navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            }
+        });
+        
+        // Button click tracking (for analytics)
+        document.querySelectorAll('.btn-success, .btn-outline-success').forEach(button => {
+            button.addEventListener('click', function() {
+                const buttonText = this.textContent.trim();
+                console.log('Button clicked:', buttonText);
+            });
+        });
+        
+        // Direct URL functions to ensure buttons work
+        function goToLogin() {
+            window.location.href = '/login';
+        }
+        
+        function goToRegister() {
+            window.location.href = '/register';
+        }
+        
+        // Add click handlers to all login/register buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButtons = document.querySelectorAll('a[href*="login"], .btn-login');
+            const registerButtons = document.querySelectorAll('a[href*="register"], .btn-register');
+            
+            loginButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/login';
+                });
+            });
+            
+            registerButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/register';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

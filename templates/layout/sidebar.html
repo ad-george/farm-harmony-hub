@@ -1,0 +1,81 @@
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4 class="mb-0">
+            <i class="fas fa-tractor me-2"></i> FarmPro
+        </h4>
+        <small class="text-white-50">Management System</small>
+    </div>
+    
+    <div class="sidebar-nav mt-4">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" 
+                   href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('farms.') %}active{% endif %}" 
+                   href="{{ url_for('farms.index') }}">
+                    <i class="fas fa-farm me-2"></i> Farms
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('crops.') %}active{% endif %}" 
+                   href="{{ url_for('crops.index') }}">
+                    <i class="fas fa-seedling me-2"></i> Crops
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('livestock.') %}active{% endif %}" 
+                   href="{{ url_for('livestock.index') }}">
+                    <i class="fas fa-cow me-2"></i> Livestock
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('finance.') %}active{% endif %}" 
+                   href="{{ url_for('finance.index') }}">
+                    <i class="fas fa-chart-line me-2"></i> Finance
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('tasks.') %}active{% endif %}" 
+                   href="{{ url_for('tasks.index') }}">
+                    <i class="fas fa-tasks me-2"></i> Tasks
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('reports.') %}active{% endif %}" 
+                   href="{{ url_for('reports.index') }}">
+                    <i class="fas fa-chart-pie me-2"></i> Reports
+                </a>
+            </li>
+            
+            {% if current_user.is_admin() %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint.startswith('admin.') %}active{% endif %}" 
+                   href="{{ url_for('admin.index') }}">
+                    <i class="fas fa-cog me-2"></i> Admin
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="position-absolute bottom-0 start-0 w-100 p-3">
+            <div class="d-flex align-items-center">
+                <img src="{{ current_user.profile_image or 'https://ui-avatars.com/api/?name=' + current_user.full_name + '&background=fff&color=2e7d32&size=40' }}" 
+                     class="rounded-circle me-2" width="40" height="40" alt="Profile">
+                <div>
+                    <small class="d-block text-white">{{ current_user.full_name }}</small>
+                    <small class="text-white-50">{{ current_user.role.role_name }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

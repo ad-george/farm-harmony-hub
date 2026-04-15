@@ -1,0 +1,9 @@
+SECRET_KEY=your-secret-key-change-this-in-production
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=farm_management_system
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_email_password
+WEATHER_API_KEY=your_weather_api_key

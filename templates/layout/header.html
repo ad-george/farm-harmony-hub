@@ -1,0 +1,61 @@
+<nav class="navbar navbar-light bg-white shadow-sm mb-4">
+    <div class="container-fluid">
+        <button class="btn btn-outline-secondary d-md-none" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 text-success">
+                {% if farm %}
+                    <i class="fas fa-farm me-2"></i>{{ farm.name }}
+                {% else %}
+                    <i class="fas fa-tractor me-2"></i>Farm Management
+                {% endif %}
+            </h5>
+        </div>
+        
+        <div class="d-flex align-items-center">
+            <div class="dropdown me-3">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge bg-danger">3</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Notifications</h6>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                        Equipment maintenance due
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-seedling text-success me-2"></i>
+                        Crop ready for harvest
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-shopping-cart text-info me-2"></i>
+                        Low stock alert
+                    </a>
+                </div>
+            </div>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-success dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-user me-2"></i>{{ current_user.username }}
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="{{ '/profile' }}">
+                        <i class="fas fa-user-circle me-2"></i> Profile
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ '/logout' }}">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

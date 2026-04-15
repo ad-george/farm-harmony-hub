@@ -1,0 +1,98 @@
+/* Main Stylesheet */
+:root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --primary-light: #c8e6c9;
+    --secondary: #388e3c;
+    --accent: #43a047;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+/* Card styles */
+.card {
+    border: 1px solid rgba(0,0,0,0.125);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+.card-header {
+    background-color: rgba(46,125,50,0.1);
+    border-bottom: 1px solid rgba(46,125,50,0.2);
+}
+
+/* Table styles */
+.table thead th {
+    background-color: rgba(46,125,50,0.1);
+    border-bottom: 2px solid var(--primary);
+}
+
+/* Form styles */
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(46,125,50,0.25);
+}
+
+/* Alert styles */
+.alert-success {
+    background-color: rgba(40,167,69,0.1);
+    border-color: rgba(40,167,69,0.2);
+    color: #155724;
+}
+
+.alert-warning {
+    background-color: rgba(255,193,7,0.1);
+    border-color: rgba(255,193,7,0.2);
+    color: #856404;
+}
+
+.alert-danger {
+    background-color: rgba(220,53,69,0.1);
+    border-color: rgba(220,53,69,0.2);
+    color: #721c24;
+}
+
+/* Badge styles */
+.badge-success {
+    background-color: var(--success);
+}
+
+/* Navigation */
+.nav-pills .nav-link.active {
+    background-color: var(--primary);
+}
+
+/* Progress bar */
+.progress-bar {
+    background-color: var(--primary);
+}

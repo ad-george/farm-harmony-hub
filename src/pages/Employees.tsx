@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 const roleConfig = {
   owner: { label: "Owner", className: "bg-primary/10 text-primary" },
   manager: { label: "Manager", className: "bg-accent/20 text-accent-foreground" },
+  senior_employee: { label: "Senior Employee", className: "bg-warning/10 text-warning" },
   employee: { label: "Employee", className: "bg-info/10 text-info" },
 };
 
@@ -45,11 +46,11 @@ export default function Employees() {
     full_name: "", email: "", password: "", phone: "", role: "employee", farm_id: "",
   });
 
-  const filteredEmployees = employees.filter(
-    (emp) =>
-      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.farm.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+const filteredEmployees = (employees || []).filter(
+  (emp) =>
+    emp?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp?.farm?.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
   const openRoleDialog = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -155,7 +156,7 @@ export default function Employees() {
             </TableHeader>
             <TableBody>
               {filteredEmployees.map((employee) => {
-                const role = roleConfig[employee.role];
+                const role = roleConfig[employee?.role] || roleConfig.employee;
                 const initials = employee.name.split(" ").map((n) => n[0]).join("");
                 return (
                   <TableRow key={employee.id} className="hover:bg-muted/30">
