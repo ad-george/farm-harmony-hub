@@ -60,6 +60,29 @@ const KNOWN_LOCATIONS: Record<string, { lat: number; lon: number; name: string }
   "garissa": { lat: -0.4532, lon: 39.6461, name: "Garissa" },
   "isiolo": { lat: 0.3546, lon: 37.5822, name: "Isiolo" },
   "tharaka nithi": { lat: -0.3000, lon: 37.8000, name: "Tharaka Nithi" },
+  "kisii": { lat: -0.6817, lon: 34.7680, name: "Kisii" },
+  "west mugirango": { lat: -0.6500, lon: 34.9000, name: "West Mugirango, Nyamira" },
+  "nyamira": { lat: -0.5633, lon: 34.9358, name: "Nyamira" },
+  "homabay": { lat: -0.5273, lon: 34.4571, name: "Homa Bay" },
+  "homa bay": { lat: -0.5273, lon: 34.4571, name: "Homa Bay" },
+  "migori": { lat: -1.0634, lon: 34.4731, name: "Migori" },
+  "bomet": { lat: -0.7827, lon: 35.3416, name: "Bomet" },
+  "narok": { lat: -1.0833, lon: 35.8667, name: "Narok" },
+  "vihiga": { lat: 0.0766, lon: 34.7220, name: "Vihiga" },
+  "busia": { lat: 0.4608, lon: 34.1115, name: "Busia" },
+  "siaya": { lat: 0.0608, lon: 34.2870, name: "Siaya" },
+  "nandi": { lat: 0.1833, lon: 35.1167, name: "Nandi" },
+  "elgeyo marakwet": { lat: 0.8000, lon: 35.5000, name: "Elgeyo Marakwet" },
+  "baringo": { lat: 0.4683, lon: 35.9737, name: "Baringo" },
+  "marsabit": { lat: 2.3284, lon: 37.9899, name: "Marsabit" },
+  "wajir": { lat: 1.7471, lon: 40.0573, name: "Wajir" },
+  "mandera": { lat: 3.9366, lon: 41.8550, name: "Mandera" },
+  "lamu": { lat: -2.2717, lon: 40.9020, name: "Lamu" },
+  "kilifi": { lat: -3.5107, lon: 39.9093, name: "Kilifi" },
+  "kwale": { lat: -4.1747, lon: 39.4502, name: "Kwale" },
+  "taita taveta": { lat: -3.3163, lon: 38.4849, name: "Taita Taveta" },
+  "kitui": { lat: -1.3667, lon: 38.0167, name: "Kitui" },
+  "makueni": { lat: -1.8038, lon: 37.6244, name: "Makueni" },
 };
 
 // Try to find coordinates from known locations
@@ -109,21 +132,34 @@ serve(async (req) => {
           // Step 2: Geocode using Open-Meteo with Kenya preference
           let matchedResult: any = null;
 
-          for (const query of [`${rawQuery}, Kenya`, rawQuery]) {
+          // Build query candidates: full string, each comma-part, then each word (>=3 chars)
+          const parts = rawQuery.split(/[,/]+/).map(p => p.trim()).filter(Boolean);
+          const words = rawQuery.split(/[\s,/]+/).map(p => p.trim()).filter(w => w.length >= 3);
+          const candidates = Array.from(new Set([
+            `${rawQuery}, Kenya`,
+            rawQuery,
+            ...parts.flatMap(p => [`${p}, Kenya`, p]),
+            ...words.flatMap(w => [`${w}, Kenya`, w]),
+          ]));
+
+          for (const query of candidates) {
+            // Try known locations for this candidate too
+            const knownPart = findKnownLocation(query);
+            if (knownPart) {
+              matchedResult = { latitude: knownPart.lat, longitude: knownPart.lon, name: knownPart.name, country_code: "KE", elevation: 0 };
+              break;
+            }
             const geoRes = await fetch(
               `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
             );
             if (!geoRes.ok) {
-              const errText = await geoRes.text();
-              console.error(`Geocoding error for ${query}:`, geoRes.status, errText);
+              console.error(`Geocoding error for ${query}:`, geoRes.status);
               continue;
             }
             const geoData = await geoRes.json();
             if (geoData.results && geoData.results.length > 0) {
-              // Strongly prefer results in Kenya (country_code: KE)
               const kenyanResults = geoData.results.filter((r: any) => r.country_code === "KE");
               if (kenyanResults.length > 0) {
-                // Among Kenyan results, prefer lower elevation (towns, not mountains)
                 matchedResult = kenyanResults.sort((a: any, b: any) => (a.elevation || 0) - (b.elevation || 0))[0];
               } else {
                 matchedResult = geoData.results[0];
@@ -133,8 +169,11 @@ serve(async (req) => {
           }
 
           if (!matchedResult) {
-            throw new Error(`Location "${rawQuery}" not found. Try a more specific name like "Meru, Kenya".`);
+            // Graceful fallback: default to Nairobi so the page still renders
+            console.warn(`Location "${rawQuery}" not found, falling back to Nairobi.`);
+            matchedResult = { latitude: -1.2921, longitude: 36.8219, name: "Nairobi (fallback)", country_code: "KE", elevation: 1795 };
           }
+
 
           latitude = matchedResult.latitude;
           longitude = matchedResult.longitude;
