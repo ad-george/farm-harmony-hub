@@ -132,21 +132,34 @@ serve(async (req) => {
           // Step 2: Geocode using Open-Meteo with Kenya preference
           let matchedResult: any = null;
 
-          for (const query of [`${rawQuery}, Kenya`, rawQuery]) {
+          // Build query candidates: full string, each comma-part, then each word (>=3 chars)
+          const parts = rawQuery.split(/[,/]+/).map(p => p.trim()).filter(Boolean);
+          const words = rawQuery.split(/[\s,/]+/).map(p => p.trim()).filter(w => w.length >= 3);
+          const candidates = Array.from(new Set([
+            `${rawQuery}, Kenya`,
+            rawQuery,
+            ...parts.flatMap(p => [`${p}, Kenya`, p]),
+            ...words.flatMap(w => [`${w}, Kenya`, w]),
+          ]));
+
+          for (const query of candidates) {
+            // Try known locations for this candidate too
+            const knownPart = findKnownLocation(query);
+            if (knownPart) {
+              matchedResult = { latitude: knownPart.lat, longitude: knownPart.lon, name: knownPart.name, country_code: "KE", elevation: 0 };
+              break;
+            }
             const geoRes = await fetch(
               `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
             );
             if (!geoRes.ok) {
-              const errText = await geoRes.text();
-              console.error(`Geocoding error for ${query}:`, geoRes.status, errText);
+              console.error(`Geocoding error for ${query}:`, geoRes.status);
               continue;
             }
             const geoData = await geoRes.json();
             if (geoData.results && geoData.results.length > 0) {
-              // Strongly prefer results in Kenya (country_code: KE)
               const kenyanResults = geoData.results.filter((r: any) => r.country_code === "KE");
               if (kenyanResults.length > 0) {
-                // Among Kenyan results, prefer lower elevation (towns, not mountains)
                 matchedResult = kenyanResults.sort((a: any, b: any) => (a.elevation || 0) - (b.elevation || 0))[0];
               } else {
                 matchedResult = geoData.results[0];
@@ -156,8 +169,11 @@ serve(async (req) => {
           }
 
           if (!matchedResult) {
-            throw new Error(`Location "${rawQuery}" not found. Try a more specific name like "Meru, Kenya".`);
+            // Graceful fallback: default to Nairobi so the page still renders
+            console.warn(`Location "${rawQuery}" not found, falling back to Nairobi.`);
+            matchedResult = { latitude: -1.2921, longitude: 36.8219, name: "Nairobi (fallback)", country_code: "KE", elevation: 1795 };
           }
+
 
           latitude = matchedResult.latitude;
           longitude = matchedResult.longitude;
