@@ -24,6 +24,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          organization_id: string | null
           planted_date: string | null
           status: string
           updated_at: string
@@ -39,6 +40,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          organization_id?: string | null
           planted_date?: string | null
           status?: string
           updated_at?: string
@@ -54,6 +56,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          organization_id?: string | null
           planted_date?: string | null
           status?: string
           updated_at?: string
@@ -68,6 +71,13 @@ export type Database = {
             referencedRelation: "farms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "crops_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       farm_assignments: {
@@ -75,6 +85,7 @@ export type Database = {
           created_at: string
           farm_id: string
           id: string
+          organization_id: string | null
           role: string
           user_id: string
         }
@@ -82,6 +93,7 @@ export type Database = {
           created_at?: string
           farm_id: string
           id?: string
+          organization_id?: string | null
           role?: string
           user_id: string
         }
@@ -89,6 +101,7 @@ export type Database = {
           created_at?: string
           farm_id?: string
           id?: string
+          organization_id?: string | null
           role?: string
           user_id?: string
         }
@@ -98,6 +111,13 @@ export type Database = {
             columns: ["farm_id"]
             isOneToOne: false
             referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farm_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -111,6 +131,7 @@ export type Database = {
           id: string
           location: string | null
           name: string
+          organization_id: string | null
           size: string | null
           soil_ph: number | null
           soil_structure: string | null
@@ -127,6 +148,7 @@ export type Database = {
           id?: string
           location?: string | null
           name: string
+          organization_id?: string | null
           size?: string | null
           soil_ph?: number | null
           soil_structure?: string | null
@@ -143,6 +165,7 @@ export type Database = {
           id?: string
           location?: string | null
           name?: string
+          organization_id?: string | null
           size?: string | null
           soil_ph?: number | null
           soil_structure?: string | null
@@ -151,7 +174,15 @@ export type Database = {
           type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "farms_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       finance_records: {
         Row: {
@@ -163,6 +194,7 @@ export type Database = {
           description: string | null
           farm_id: string | null
           id: string
+          organization_id: string | null
           type: string
           updated_at: string
         }
@@ -175,6 +207,7 @@ export type Database = {
           description?: string | null
           farm_id?: string | null
           id?: string
+          organization_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -187,6 +220,7 @@ export type Database = {
           description?: string | null
           farm_id?: string | null
           id?: string
+          organization_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -196,6 +230,13 @@ export type Database = {
             columns: ["farm_id"]
             isOneToOne: false
             referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -210,6 +251,7 @@ export type Database = {
           id: string
           item_name: string
           notes: string | null
+          organization_id: string | null
           quality_grade: string | null
           quantity: number
           revenue: number | null
@@ -225,6 +267,7 @@ export type Database = {
           id?: string
           item_name: string
           notes?: string | null
+          organization_id?: string | null
           quality_grade?: string | null
           quantity?: number
           revenue?: number | null
@@ -240,6 +283,7 @@ export type Database = {
           id?: string
           item_name?: string
           notes?: string | null
+          organization_id?: string | null
           quality_grade?: string | null
           quantity?: number
           revenue?: number | null
@@ -254,6 +298,13 @@ export type Database = {
             referencedRelation: "farms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "harvests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       inventory: {
@@ -266,6 +317,7 @@ export type Database = {
           id: string
           min_stock: number | null
           name: string
+          organization_id: string | null
           quantity: number
           status: string
           supplier: string | null
@@ -281,6 +333,7 @@ export type Database = {
           id?: string
           min_stock?: number | null
           name: string
+          organization_id?: string | null
           quantity?: number
           status?: string
           supplier?: string | null
@@ -296,6 +349,7 @@ export type Database = {
           id?: string
           min_stock?: number | null
           name?: string
+          organization_id?: string | null
           quantity?: number
           status?: string
           supplier?: string | null
@@ -308,6 +362,13 @@ export type Database = {
             columns: ["farm_id"]
             isOneToOne: false
             referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -323,6 +384,7 @@ export type Database = {
           id: string
           location: string | null
           notes: string | null
+          organization_id: string | null
           type: string
           updated_at: string
         }
@@ -336,6 +398,7 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          organization_id?: string | null
           type: string
           updated_at?: string
         }
@@ -349,6 +412,7 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          organization_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -360,6 +424,13 @@ export type Database = {
             referencedRelation: "farms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "livestock_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       messages: {
@@ -369,6 +440,7 @@ export type Database = {
           farm_id: string | null
           id: string
           is_read: boolean
+          organization_id: string | null
           recipient_id: string | null
           sender_id: string
         }
@@ -378,6 +450,7 @@ export type Database = {
           farm_id?: string | null
           id?: string
           is_read?: boolean
+          organization_id?: string | null
           recipient_id?: string | null
           sender_id: string
         }
@@ -387,6 +460,7 @@ export type Database = {
           farm_id?: string | null
           id?: string
           is_read?: boolean
+          organization_id?: string | null
           recipient_id?: string | null
           sender_id?: string
         }
@@ -398,7 +472,38 @@ export type Database = {
             referencedRelation: "farms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -406,6 +511,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          organization_id: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -415,6 +521,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          organization_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -424,11 +531,20 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          organization_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -439,6 +555,7 @@ export type Database = {
           due_date: string | null
           farm_id: string | null
           id: string
+          organization_id: string | null
           priority: string
           status: string
           title: string
@@ -452,6 +569,7 @@ export type Database = {
           due_date?: string | null
           farm_id?: string | null
           id?: string
+          organization_id?: string | null
           priority?: string
           status?: string
           title: string
@@ -465,6 +583,7 @@ export type Database = {
           due_date?: string | null
           farm_id?: string | null
           id?: string
+          organization_id?: string | null
           priority?: string
           status?: string
           title?: string
@@ -478,34 +597,53 @@ export type Database = {
             referencedRelation: "farms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
         Row: {
           created_at: string
           id: string
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_farm_access: {
         Args: { _farm_id: string; _user_id: string }
         Returns: boolean
@@ -525,9 +663,17 @@ export type Database = {
         Args: { _farm_id: string; _user_id: string }
         Returns: boolean
       }
+      is_senior_employee_on_farm: {
+        Args: { _farm_id: string; _user_id: string }
+        Returns: boolean
+      }
+      same_org: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "owner" | "manager" | "employee"
+      app_role: "owner" | "manager" | "employee" | "senior_employee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -655,7 +801,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "manager", "employee"],
+      app_role: ["owner", "manager", "employee", "senior_employee"],
     },
   },
 } as const
